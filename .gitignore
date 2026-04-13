@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# Xcode user state (breakpoints, window layout — machine-specific)
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+
+# Build output
+build/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# CocoaPods (not used here, but safe to include)
+Pods/
+
+# Claude Code session data (conversation history — not source code)
+.claude/
