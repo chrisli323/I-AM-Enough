@@ -20,6 +20,12 @@ struct SplashView: View {
         ZStack {
             Theme.parchmentBackground
 
+            // Serpent ring — sits behind the title, same width as A→E in "I AM SOBER"
+            SerpentRingView()
+                .frame(width: 190, height: 190)
+                .opacity(breathing ? 1.0 : 0.55)
+                .animation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true), value: breathing)
+
             VStack(spacing: 22) {
                 // Fleuron
                 Text("\u{2766}")
@@ -74,5 +80,40 @@ struct SplashView: View {
             try? await Task.sleep(for: .seconds(0.5))
             onFinished()
         }
+    }
+}
+
+// MARK: - Serpent ring
+
+/// A continuously rotating arc that fades from transparent at its tail
+/// to solid at its head — a snake-chasing-its-tail loading indicator.
+private struct SerpentRingView: View {
+    @State private var rotation: Double = 0
+
+    var body: some View {
+        Circle()
+            .trim(from: 0, to: 0.78)
+            .stroke(
+                AngularGradient(
+                    stops: [
+                        .init(color: .clear,                            location: 0.00),
+                        .init(color: Theme.accentGold.opacity(0.15),   location: 0.25),
+                        .init(color: Theme.accentGold.opacity(0.48),   location: 0.78),
+                        // Hold the head colour to the seam so there is
+                        // no bleed across the invisible gap.
+                        .init(color: Theme.accentGold.opacity(0.48),   location: 1.00),
+                    ],
+                    center: .center
+                ),
+                style: StrokeStyle(lineWidth: 2, lineCap: .round)
+            )
+            // Start the arc at 12 o'clock so the head is visually at the top
+            // when the animation begins.
+            .rotationEffect(.degrees(rotation - 90))
+            .onAppear {
+                withAnimation(.linear(duration: 2.2).repeatForever(autoreverses: false)) {
+                    rotation = 360
+                }
+            }
     }
 }
