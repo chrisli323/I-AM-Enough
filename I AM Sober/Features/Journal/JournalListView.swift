@@ -35,14 +35,18 @@ struct JournalListView: View {
                             emptyState
                                 .padding(.top, 80)
                         } else {
-                            LazyVStack(spacing: 14) {
-                                ForEach(entries) { entry in
+                            LazyVStack(spacing: 0) {
+                                ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
                                     Button {
                                         path.append(entry.date)
                                     } label: {
                                         JournalEntryRow(entry: entry)
                                     }
-                                    .buttonStyle(.plain)
+                                    .buttonStyle(PressScaleButtonStyle())
+
+                                    if index < entries.count - 1 {
+                                        FleuronDivider()
+                                    }
                                 }
                             }
                             .padding(.horizontal, 20)
@@ -171,5 +175,39 @@ private struct JournalEntryRow: View {
                 .foregroundStyle(Theme.inkFaded)
         }
         .frame(width: 48)
+    }
+}
+
+// MARK: - Fleuron divider
+
+/// A small ornamental separator — hairlines flanking a fleuron — used between
+/// journal list rows to echo the printed-book aesthetic of the teaching pages.
+private struct FleuronDivider: View {
+    var body: some View {
+        HStack(spacing: 12) {
+            Rectangle()
+                .fill(Theme.accentGold.opacity(0.28))
+                .frame(height: 0.5)
+            Text("\u{2766}") // ❦ FLORAL HEART
+                .font(.system(size: 9, design: .serif))
+                .foregroundStyle(Theme.accentGold.opacity(0.55))
+            Rectangle()
+                .fill(Theme.accentGold.opacity(0.28))
+                .frame(height: 0.5)
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 8)
+    }
+}
+
+// MARK: - Press-scale button style
+
+/// Subtly scales a card down on press — gives the row a satisfying tactile
+/// "push" feel without being distracting.
+private struct PressScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.spring(response: 0.2, dampingFraction: 0.65), value: configuration.isPressed)
     }
 }

@@ -16,26 +16,63 @@ import UIKit
 enum Theme {
 
     // MARK: - Colors
+    //
+    //  Every color uses a UIColor trait-collection block so it automatically
+    //  adapts between the light parchment theme and the sepia dark theme.
+    //  Light values are unchanged from Phase 2; dark values use a deep warm-
+    //  leather palette — dark brown backgrounds, warm cream text, bright gold
+    //  accents — so the app feels like reading by candlelight.
 
-    /// Lightest cream — top of the parchment background gradient.
-    static let parchmentLight = Color(uiColor: UIColor(red: 0.969, green: 0.937, blue: 0.851, alpha: 1)) // #F7EFD9
-    /// Slightly darker, warmer cream — bottom of the gradient.
-    static let parchmentDark = Color(uiColor: UIColor(red: 0.929, green: 0.871, blue: 0.737, alpha: 1))  // #EDDEBC
-    /// A barely-there warm shadow used for the page edges.
-    static let parchmentShadow = Color(uiColor: UIColor(red: 0.749, green: 0.620, blue: 0.376, alpha: 1)) // #BF9E60
+    /// Lightest cream (light) / deep warm leather (dark) — top of gradient.
+    static let parchmentLight = Color(uiColor: UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(red: 0.11, green: 0.08, blue: 0.04, alpha: 1)  // #1C1409
+            : UIColor(red: 0.969, green: 0.937, blue: 0.851, alpha: 1) // #F7EFD9
+    })
+    /// Slightly darker cream (light) / near-black sepia (dark) — bottom of gradient.
+    static let parchmentDark = Color(uiColor: UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(red: 0.07, green: 0.05, blue: 0.02, alpha: 1)  // #120D05
+            : UIColor(red: 0.929, green: 0.871, blue: 0.737, alpha: 1) // #EDDEBC
+    })
+    /// Edge shadow hue — warm tan (light) / deep sepia black (dark).
+    static let parchmentShadow = Color(uiColor: UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(red: 0.04, green: 0.02, blue: 0.01, alpha: 1)  // #0A0603
+            : UIColor(red: 0.749, green: 0.620, blue: 0.376, alpha: 1) // #BF9E60
+    })
 
-    /// Primary "ink" color for body copy — a deep walnut brown that reads
-    /// almost as black on parchment but feels warmer than pure #000.
-    static let ink = Color(uiColor: UIColor(red: 0.231, green: 0.149, blue: 0.067, alpha: 1)) // #3B2611
-    /// Secondary ink — used for headers, dividers, and the reflection text.
-    static let inkSecondary = Color(uiColor: UIColor(red: 0.435, green: 0.314, blue: 0.149, alpha: 1)) // #6F5026
-    /// Faded ink — for small caps labels and the most subtle elements.
-    static let inkFaded = Color(uiColor: UIColor(red: 0.580, green: 0.451, blue: 0.247, alpha: 1)) // #94733F
-    /// Faded ink darkened 30% — used for the Day N header and tab bar selected tint.
-    static let inkFadedDark = Color(uiColor: UIColor(red: 0.34, green: 0.26, blue: 0.14, alpha: 1)) // #574224
+    /// Primary "ink" — walnut brown (light) / warm parchment cream (dark).
+    static let ink = Color(uiColor: UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(red: 0.93, green: 0.87, blue: 0.74, alpha: 1)  // #EDE0BD
+            : UIColor(red: 0.231, green: 0.149, blue: 0.067, alpha: 1) // #3B2611
+    })
+    /// Secondary ink — medium brown (light) / golden tan (dark).
+    static let inkSecondary = Color(uiColor: UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(red: 0.78, green: 0.68, blue: 0.51, alpha: 1)  // #C7AD83
+            : UIColor(red: 0.435, green: 0.314, blue: 0.149, alpha: 1) // #6F5026
+    })
+    /// Faded ink — muted tan (light) / muted gold (dark).
+    static let inkFaded = Color(uiColor: UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(red: 0.63, green: 0.54, blue: 0.38, alpha: 1)  // #A18A61
+            : UIColor(red: 0.580, green: 0.451, blue: 0.247, alpha: 1) // #94733F
+    })
+    /// Faded ink darkened — used for Day N header and selected tab icon.
+    static let inkFadedDark = Color(uiColor: UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(red: 0.84, green: 0.72, blue: 0.52, alpha: 1)  // #D6B884 — bright warm gold on dark
+            : UIColor(red: 0.34, green: 0.26, blue: 0.14, alpha: 1) // #574224
+    })
 
-    /// A warm gold accent for ornaments and dividers.
-    static let accentGold = Color(uiColor: UIColor(red: 0.690, green: 0.529, blue: 0.275, alpha: 1)) // #B08746
+    /// Warm gold accent — ornaments and dividers.
+    static let accentGold = Color(uiColor: UIColor { t in
+        t.userInterfaceStyle == .dark
+            ? UIColor(red: 0.75, green: 0.58, blue: 0.32, alpha: 1)  // #BF9452 — slightly brighter in dark
+            : UIColor(red: 0.690, green: 0.529, blue: 0.275, alpha: 1) // #B08746
+    })
 
     // MARK: - Background
 
@@ -103,6 +140,8 @@ enum Theme {
 /// pattern is stable across redraws and across launches. Tuned for low
 /// density / low opacity so it never competes with the text.
 private struct PaperGrain: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         Canvas { context, size in
             var rng = SeededRandomNumberGenerator(seed: 0xC0FFEE_BEEF_F00D)
@@ -116,11 +155,12 @@ private struct PaperGrain: View {
                 let rect = CGRect(x: x, y: y, width: radius, height: radius)
                 context.fill(
                     Path(ellipseIn: rect),
-                    with: .color(.black.opacity(alpha))
+                    with: .color(.white.opacity(alpha))
                 )
             }
         }
-        .blendMode(.multiply)
+        // Multiply darkens on parchment; screen lightens on the dark leather bg.
+        .blendMode(colorScheme == .dark ? .screen : .multiply)
         .allowsHitTesting(false)
         .drawingGroup() // rasterise once for performance
     }

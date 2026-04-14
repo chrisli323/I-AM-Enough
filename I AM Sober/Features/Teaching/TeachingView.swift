@@ -111,6 +111,7 @@ private struct TeachingPage: View {
     let date: Date
 
     @State private var isFavorited = false
+    @State private var contentVisible = false
 
     var body: some View {
         let teaching = appState.scheduler.teaching(for: date)
@@ -120,11 +121,17 @@ private struct TeachingPage: View {
             VStack(alignment: .leading, spacing: 36) {
                 header(dayNumber: dayNumber, date: date)
 
-                Text(teaching.body)
-                    .font(Theme.body())
-                    .lineSpacing(Theme.bodyLineSpacing)
-                    .foregroundStyle(Theme.ink)
-                    .fixedSize(horizontal: false, vertical: true)
+                // Top gold hairline — frames the teaching body like a printed page
+                Rectangle()
+                    .fill(Theme.accentGold.opacity(0.28))
+                    .frame(height: 0.4)
+
+                DropCapBody(text: teaching.body)
+
+                // Bottom gold hairline
+                Rectangle()
+                    .fill(Theme.accentGold.opacity(0.28))
+                    .frame(height: 0.4)
 
                 reflectionBlock(teaching.reflection)
 
@@ -140,11 +147,22 @@ private struct TeachingPage: View {
             .padding(.horizontal, Theme.pageHorizontalPadding)
             .padding(.top, 32)
             .frame(maxWidth: .infinity, alignment: .leading)
+            // Reveal animation — each page slides up and fades in when swiped to
+            .opacity(contentVisible ? 1 : 0)
+            .offset(y: contentVisible ? 0 : 12)
         }
         .scrollIndicators(.hidden)
         .contentMargins(.bottom, 0, for: .scrollContent)
-        .onAppear { checkFavorite(teachingId: teaching.id) }
+        .onAppear {
+            checkFavorite(teachingId: teaching.id)
+            contentVisible = false
+            withAnimation(.easeOut(duration: 0.38).delay(0.05)) {
+                contentVisible = true
+            }
+        }
     }
+
+    // MARK: - Subviews
 
     @ViewBuilder
     private func header(dayNumber: Int, date: Date) -> some View {
@@ -156,9 +174,12 @@ private struct TeachingPage: View {
                     .tracking(2.4)
                     .foregroundStyle(Theme.inkFaded)
 
+                // Digit-roll animation when swiping between days
                 Text("Day \(dayNumber)")
                     .font(Theme.display())
                     .foregroundStyle(Theme.inkFadedDark)
+                    .contentTransition(.numericText())
+                    .animation(.easeInOut(duration: 0.4), value: dayNumber)
             }
 
             Spacer()
@@ -273,21 +294,60 @@ private struct TeachingPage: View {
             }
             .padding(.vertical, 4)
 
-            Text("TO CARRY WITH YOU")
-                .font(Theme.smallCaps(10))
-                .tracking(2.6)
-                .foregroundStyle(Theme.inkFaded)
+            // Quote mark watermark behind the reflection text
+            ZStack {
+                Text("\u{201C}") // opening curly double-quote
+                    .font(.system(size: 100, design: .serif))
+                    .foregroundStyle(Theme.accentGold.opacity(0.09))
+                    .allowsHitTesting(false)
 
-            Text(text)
-                .font(Theme.bodyItalic())
-                .lineSpacing(Theme.reflectionLineSpacing)
-                .foregroundStyle(Theme.inkSecondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.horizontal, 4)
+                VStack(spacing: 14) {
+                    Text("TO CARRY WITH YOU")
+                        .font(Theme.smallCaps(10))
+                        .tracking(2.6)
+                        .foregroundStyle(Theme.inkFaded)
+
+                    Text(text)
+                        .font(Theme.bodyItalic())
+                        .lineSpacing(Theme.reflectionLineSpacing)
+                        .foregroundStyle(Theme.inkSecondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 4)
+                }
+            }
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 0)
+    }
+}
+
+// MARK: - Drop cap body
+
+/// Renders the first character of a teaching as a large display-size drop cap
+/// with the remaining text flowing beside and below it — a classic manuscript
+/// typesetting device that signals "this is worth reading slowly."
+private struct DropCapBody: View {
+    let text: String
+
+    private var firstChar: String { String(text.prefix(1)) }
+    private var remainder: String { String(text.dropFirst()) }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 0) {
+            Text(firstChar)
+                .font(.system(size: 54, weight: .semibold, design: .serif))
+                .foregroundStyle(Theme.inkFadedDark)
+                .padding(.trailing, 3)
+                .padding(.top, -3) // align cap-height with the body first line
+                .frame(width: 40, alignment: .leading)
+
+            Text(remainder)
+                .font(Theme.body())
+                .lineSpacing(Theme.bodyLineSpacing)
+                .foregroundStyle(Theme.ink)
+        }
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
