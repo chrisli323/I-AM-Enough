@@ -156,39 +156,38 @@ private struct CustomTabBar: View {
     var body: some View {
         HStack(spacing: 0) {
             ForEach(items, id: \.tab) { item in
-                Button {
+                VStack(spacing: 4) {
+                    Image(systemName: item.icon)
+                        .font(.system(size: 21, weight: .regular))
+                        // Spring upward on selection, settle back in place
+                        .scaleEffect(bouncingTab == item.tab ? 1.38 : 1.0)
+                        .offset(y: bouncingTab == item.tab ? -3 : 0)
+                        .animation(
+                            .spring(response: 0.28, dampingFraction: 0.45),
+                            value: bouncingTab
+                        )
+
+                    Text(item.label)
+                        .font(Theme.smallCaps(9))
+                        .tracking(1.2)
+                }
+                .foregroundStyle(
+                    selectedTab == item.tab
+                        ? Theme.inkFadedDark
+                        : Theme.inkFaded.opacity(0.55)
+                )
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                // Use tap gesture instead of Button to avoid system press highlights
+                .contentShape(Rectangle())
+                .onTapGesture {
                     guard selectedTab != item.tab else { return }
                     selectedTab = item.tab
                     bouncingTab = item.tab
-                    // Reset the bounce trigger after the spring settles
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
                         if bouncingTab == item.tab { bouncingTab = nil }
                     }
-                } label: {
-                    VStack(spacing: 4) {
-                        Image(systemName: item.icon)
-                            .font(.system(size: 21, weight: .regular))
-                            // Spring upward on selection, settle back in place
-                            .scaleEffect(bouncingTab == item.tab ? 1.38 : 1.0)
-                            .offset(y: bouncingTab == item.tab ? -3 : 0)
-                            .animation(
-                                .spring(response: 0.28, dampingFraction: 0.45),
-                                value: bouncingTab
-                            )
-
-                        Text(item.label)
-                            .font(Theme.smallCaps(9))
-                            .tracking(1.2)
-                    }
-                    .foregroundStyle(
-                        selectedTab == item.tab
-                            ? Theme.inkFadedDark
-                            : Theme.inkFaded.opacity(0.55)
-                    )
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
                 }
-                .buttonStyle(.plain)
             }
         }
         .padding(.horizontal, 4)
