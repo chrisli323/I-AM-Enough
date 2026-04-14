@@ -22,7 +22,7 @@ struct SplashView: View {
 
             // Serpent ring — sits behind the title, same width as A→E in "I AM SOBER"
             SerpentRingView()
-                .frame(width: 190, height: 190)
+                .frame(width: 230, height: 230)
                 .opacity(breathing ? 1.0 : 0.55)
                 .animation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true), value: breathing)
 
@@ -105,7 +105,7 @@ private struct SerpentRingView: View {
                     ],
                     center: .center
                 ),
-                style: StrokeStyle(lineWidth: 2, lineCap: .round)
+                style: StrokeStyle(lineWidth: 5, lineCap: .round)
             )
             // Start the arc at 12 o'clock so the head is visually at the top
             // when the animation begins.
