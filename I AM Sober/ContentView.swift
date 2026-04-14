@@ -48,7 +48,7 @@ struct ContentView: View {
                     .tag(Router.Tab.settings)
             }
             .toolbarBackground(.thinMaterial.opacity(0.45), for: .tabBar)
-			.tint(Theme.ink)
+			.tint(Theme.inkFaded)
             .opacity(showingSplash ? 0 : 1)
 
             if showingSplash {

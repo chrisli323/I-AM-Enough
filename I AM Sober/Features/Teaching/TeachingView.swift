@@ -158,7 +158,7 @@ private struct TeachingPage: View {
 
                 Text("Day \(dayNumber)")
                     .font(Theme.display())
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(Theme.inkFaded)
             }
 
             Spacer()
