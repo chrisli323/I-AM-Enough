@@ -18,4 +18,8 @@ struct Teaching: Identifiable, Codable, Hashable {
     /// question- or anchor-shaped, always inward-pointing. Rendered as the
     /// placeholder text in the journal entry for this day.
     let reflection: String
+    /// A psychologist-crafted question specific to this day's teaching theme.
+    /// Replaces the generic "How are you feeling today?" heading in the journal
+    /// editor to invite genuine self-discovery and emotional connection.
+    let journalPrompt: String
 }

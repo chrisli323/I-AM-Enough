@@ -69,7 +69,8 @@ final class TeachingStore {
                 milestones[entry.day] = Teaching(
                     id: -entry.day, // negative IDs distinguish milestones
                     body: entry.body,
-                    reflection: entry.reflection
+                    reflection: entry.reflection,
+                    journalPrompt: entry.journalPrompt ?? "What is present in you today that deserves to be written down?"
                 )
             }
         } catch {
@@ -80,7 +81,8 @@ final class TeachingStore {
     private static let fallback = Teaching(
         id: 0,
         body: "Take one full breath. You are here. That alone is enough for this moment.",
-        reflection: "Whatever today holds, return to the breath. It is always available."
+        reflection: "Whatever today holds, return to the breath. It is always available.",
+        journalPrompt: "What are you feeling right now, in this moment, without any need to explain or justify it?"
     )
 }
 
@@ -90,4 +92,5 @@ private struct MilestoneEntry: Codable {
     let day: Int
     let body: String
     let reflection: String
+    let journalPrompt: String?
 }

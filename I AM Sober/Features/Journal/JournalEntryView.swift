@@ -46,7 +46,7 @@ struct JournalEntryView: View {
 
                     promptHint(teaching.reflection)
 
-                    editor
+                    editor(for: teaching)
 
                     if let attachedImage {
                         attachedPhoto(attachedImage)
@@ -187,9 +187,9 @@ struct JournalEntryView: View {
         }
     }
 
-    private var editor: some View {
+    private func editor(for teaching: Teaching) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("How are you feeling today?")
+            Text(teaching.journalPrompt)
                 .font(Theme.body(20))
                 .foregroundStyle(Theme.ink)
 
