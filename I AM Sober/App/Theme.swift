@@ -31,6 +31,8 @@ enum Theme {
     static let inkSecondary = Color(uiColor: UIColor(red: 0.435, green: 0.314, blue: 0.149, alpha: 1)) // #6F5026
     /// Faded ink — for small caps labels and the most subtle elements.
     static let inkFaded = Color(uiColor: UIColor(red: 0.580, green: 0.451, blue: 0.247, alpha: 1)) // #94733F
+    /// Faded ink darkened 15% — used for the Day N header and tab bar selected tint.
+    static let inkFadedDark = Color(uiColor: UIColor(red: 0.493, green: 0.383, blue: 0.210, alpha: 1)) // #7E6235
 
     /// A warm gold accent for ornaments and dividers.
     static let accentGold = Color(uiColor: UIColor(red: 0.690, green: 0.529, blue: 0.275, alpha: 1)) // #B08746
