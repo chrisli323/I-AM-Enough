@@ -34,8 +34,11 @@ struct TeachingView: View {
             TabView(selection: $selectedIndex) {
                 ForEach(pageRange, id: \.self) { index in
                     let daysFromToday = index - maxBackDays
-                    TeachingPage(date: dateForOffset(daysFromToday))
-                        .tag(index)
+                    TeachingPage(
+                        date: dateForOffset(daysFromToday),
+                        isSelected: index == selectedIndex
+                    )
+                    .tag(index)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
@@ -109,9 +112,13 @@ private struct TeachingPage: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
     let date: Date
+    let isSelected: Bool
 
     @State private var isFavorited = false
     @State private var contentVisible = false
+    /// Animates from 0 → real day number each time this page becomes active,
+    /// giving the digit-roll effect via .contentTransition(.numericText()).
+    @State private var displayDayNumber: Int = 0
 
     var body: some View {
         let teaching = appState.scheduler.teaching(for: date)
@@ -119,7 +126,7 @@ private struct TeachingPage: View {
 
         ScrollView {
             VStack(alignment: .leading, spacing: 36) {
-                header(dayNumber: dayNumber, date: date)
+                header(dayNumber: displayDayNumber, date: date)
 
                 // Top gold hairline — frames the teaching body like a printed page
                 Rectangle()
@@ -155,10 +162,31 @@ private struct TeachingPage: View {
         .contentMargins(.bottom, 0, for: .scrollContent)
         .onAppear {
             checkFavorite(teachingId: teaching.id)
-            contentVisible = false
-            withAnimation(.easeOut(duration: 0.38).delay(0.05)) {
+            if isSelected {
+                // Only animate the page that is actually visible on first load.
+                // Adjacent pages are pre-rendered by TabView and must start
+                // fully visible so they don't flash when swiped to.
+                animateIn(dayNumber: dayNumber)
+            } else {
                 contentVisible = true
+                displayDayNumber = dayNumber
             }
+        }
+        // This fires when the user swipes to/from this page — the correct
+        // trigger for both the fade-in and the digit-roll animation.
+        .onChange(of: isSelected) { _, nowSelected in
+            if nowSelected { animateIn(dayNumber: dayNumber) }
+        }
+    }
+
+    private func animateIn(dayNumber: Int) {
+        contentVisible = false
+        displayDayNumber = 0
+        withAnimation(.easeOut(duration: 0.38).delay(0.05)) {
+            contentVisible = true
+        }
+        withAnimation(.easeInOut(duration: 0.5).delay(0.15)) {
+            displayDayNumber = dayNumber
         }
     }
 
@@ -294,27 +322,25 @@ private struct TeachingPage: View {
             }
             .padding(.vertical, 4)
 
-            // Quote mark watermark behind the reflection text
-            ZStack {
-                Text("\u{201C}") // opening curly double-quote
-                    .font(.system(size: 100, design: .serif))
-                    .foregroundStyle(Theme.accentGold.opacity(0.09))
-                    .allowsHitTesting(false)
-
-                VStack(spacing: 14) {
+            VStack(spacing: 14) {
+                HStack(spacing: 5) {
+                    Text("\u{201C}") // opening curly double-quote
+                        .font(.system(size: 20, design: .serif))
+                        .foregroundStyle(Theme.accentGold.opacity(0.75))
+                        .offset(y: -1)
                     Text("TO CARRY WITH YOU")
                         .font(Theme.smallCaps(10))
                         .tracking(2.6)
                         .foregroundStyle(Theme.inkFaded)
-
-                    Text(text)
-                        .font(Theme.bodyItalic())
-                        .lineSpacing(Theme.reflectionLineSpacing)
-                        .foregroundStyle(Theme.inkSecondary)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.horizontal, 4)
                 }
+
+                Text(text)
+                    .font(Theme.bodyItalic())
+                    .lineSpacing(Theme.reflectionLineSpacing)
+                    .foregroundStyle(Theme.inkSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 4)
             }
         }
         .frame(maxWidth: .infinity)
