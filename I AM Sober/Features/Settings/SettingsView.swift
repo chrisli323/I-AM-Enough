@@ -139,7 +139,8 @@ struct SettingsView: View {
             sobrietySetupSheet
         }
         .sheet(isPresented: $showingIntentionSetup) {
-            IntentionSetupSheet(selectedDays: $selectedChallengeDays) {
+            IntentionSetupSheet(selectedDays: $selectedChallengeDays,
+                               isIntentionActive: appState.preferences.intentionDurationDays > 0) {
                 if let days = selectedChallengeDays {
                     if days == -1 {
                         // ⚠️ TODO: REMOVE BEFORE RELEASE — 1-minute test mode (Bronze)

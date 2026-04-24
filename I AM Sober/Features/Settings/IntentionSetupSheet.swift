@@ -10,7 +10,10 @@ import SwiftUI
 
 struct IntentionSetupSheet: View {
     @Binding var selectedDays: Int?
+    var isIntentionActive: Bool
     var onBegin: () -> Void
+
+    @State private var showingReplaceAlert = false
 
     private let gridChallenges: [(label: String, days: Int)] = [
         ("1 Min ⚡",  -1),  // ⚠️ TODO: REMOVE BEFORE RELEASE — test only
@@ -92,7 +95,11 @@ struct IntentionSetupSheet: View {
                 .allowsHitTesting(false)
 
                 Button {
-                    onBegin()
+                    if isIntentionActive {
+                        showingReplaceAlert = true
+                    } else {
+                        onBegin()
+                    }
                 } label: {
                     Text("Begin Challenge")
                         .font(Theme.smallCaps(13))
@@ -122,6 +129,12 @@ struct IntentionSetupSheet: View {
             }
         }
         .ignoresSafeArea(edges: .bottom)
+        .alert("Replace Current Goal?", isPresented: $showingReplaceAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Replace", role: .destructive) { onBegin() }
+        } message: {
+            Text("You have a goal in progress. Starting a new one will cancel it. Are you sure?")
+        }
     }
 
     // MARK: - Challenge Bubble
