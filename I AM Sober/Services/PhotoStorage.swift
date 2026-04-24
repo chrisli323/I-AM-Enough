@@ -4,11 +4,11 @@
 //
 //  On-device photo storage for journal entries. Images are written into
 //  Application Support/JournalPhotos/ as JPEGs, never copied to the
-//  shared photo library, never uploaded anywhere, never backed up to
-//  iCloud (we exclude the directory from iCloud backup explicitly).
+//  shared photo library, never uploaded anywhere. The directory is
+//  included in standard iCloud Backup so photos survive a device
+//  restore or reinstall.
 //
-//  Photos are downscaled before saving so a hundred entries don't eat the
-//  user's storage.
+//  Photos are downscaled before saving to keep storage footprint light.
 //
 
 import UIKit
@@ -16,9 +16,9 @@ import UIKit
 enum PhotoStorage {
 
     /// Maximum dimension (in pixels) any saved image is downscaled to.
-    private static let maxDimension: CGFloat = 2048
+    private static let maxDimension: CGFloat = 1200
     /// JPEG compression quality.
-    private static let jpegQuality: CGFloat = 0.85
+    private static let jpegQuality: CGFloat = 0.75
 
     // MARK: - Public API
 
@@ -70,10 +70,6 @@ enum PhotoStorage {
         var directory = appSupport.appendingPathComponent("JournalPhotos", isDirectory: true)
         if !fm.fileExists(atPath: directory.path) {
             try fm.createDirectory(at: directory, withIntermediateDirectories: true)
-            // Exclude from iCloud backup so journal photos stay on-device.
-            var values = URLResourceValues()
-            values.isExcludedFromBackup = true
-            try directory.setResourceValues(values)
         }
         return directory
     }
