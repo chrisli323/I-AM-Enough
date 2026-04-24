@@ -21,6 +21,9 @@ struct TeachingView: View {
     /// highest index is always today. Initialised in `.onAppear` once
     /// `appState` is available.
     @State private var selectedIndex: Int = 0
+    /// Becomes true once the splash screen has finished and the teaching
+    /// content is actually visible to the user. Drives the initial fade-in.
+    @State private var initialAnimReady = false
 
     var body: some View {
         // TODO: 🔒 FINAL BUILD — Remove previewDays and lock pageRange
@@ -36,7 +39,8 @@ struct TeachingView: View {
                     let daysFromToday = index - maxBackDays
                     TeachingPage(
                         date: dateForOffset(daysFromToday),
-                        isSelected: index == selectedIndex
+                        isSelected: index == selectedIndex,
+                        initialAnimReady: initialAnimReady
                     )
                     .tag(index)
                 }
@@ -55,6 +59,11 @@ struct TeachingView: View {
             // appearances too — we want opening the app to always land
             // on today's teaching, never on a stale historical page.
             selectedIndex = maxBackDays // snap to today (not the end)
+            // Signal the initial page to start its fade-in after the
+            // splash animation has fully completed (~3 s splash + 0.4 s fade).
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.3) {
+                initialAnimReady = true
+            }
         }
     }
 
@@ -113,8 +122,11 @@ private struct TeachingPage: View {
     @Environment(\.modelContext) private var modelContext
     let date: Date
     let isSelected: Bool
+    /// Passed down from TeachingView; becomes true once the splash is gone.
+    let initialAnimReady: Bool
 
     @State private var isFavorited = false
+    /// false = barely visible (0.1 opacity); true = fully visible (1.0).
     @State private var contentVisible = false
     /// Animates from 0 → real day number each time this page becomes active,
     /// giving the digit-roll effect via .contentTransition(.numericText()).
@@ -154,46 +166,50 @@ private struct TeachingPage: View {
             .padding(.horizontal, Theme.pageHorizontalPadding)
             .padding(.top, 32)
             .frame(maxWidth: .infinity, alignment: .leading)
-            // Reveal animation — each page slides up, scales in, and fades when swiped to
-            .opacity(contentVisible ? 1 : 0)
-            .offset(y: contentVisible ? 0 : 28)
-            .scaleEffect(contentVisible ? 1 : 0.96)
+            // Pages rest at 10 % opacity when inactive and fade to full when active.
+            // No offset or scale — just a clean, slow fade so there is never a flash.
+            .opacity(contentVisible ? 1.0 : 0.1)
         }
         .scrollIndicators(.hidden)
         .contentMargins(.bottom, 0, for: .scrollContent)
         .onAppear {
             checkFavorite(teachingId: teaching.id)
-            if isSelected {
-                // Only animate the page that is actually visible on first load.
-                // Adjacent pages are pre-rendered by TabView and must start
-                // fully visible so they don't flash when swiped to.
-                animateIn(dayNumber: dayNumber)
+            // All pages start at 0.1 opacity (contentVisible = false).
+            // Today's page waits for the initialAnimReady signal below.
+            // Adjacent pages will animate in via onChange(of: isSelected)
+            // when the user actually swipes to them.
+        }
+        // Fires when the user swipes to or away from this page.
+        .onChange(of: isSelected) { _, nowSelected in
+            if nowSelected {
+                // Only animate if the splash is already gone. During the
+                // initial selectedIndex jump (0 → today) the splash is still
+                // showing, so we defer to the initialAnimReady handler below.
+                if initialAnimReady { animateIn(dayNumber: dayNumber) }
             } else {
-                contentVisible = true
-                displayDayNumber = dayNumber
+                // Swiped away — silently reset so the next swipe back gets
+                // a fresh fade-in. No animation needed: page is off-screen.
+                contentVisible = false
+                displayDayNumber = 0
             }
         }
-        // This fires when the user swipes to/from this page — the correct
-        // trigger for both the fade-in and the digit-roll animation.
-        .onChange(of: isSelected) { _, nowSelected in
-            if nowSelected { animateIn(dayNumber: dayNumber) }
+        // Fires once after the splash has fully dismissed. Kicks off the
+        // very first fade-in on today's page and enables swipe animations.
+        .onChange(of: initialAnimReady) { _, nowReady in
+            if nowReady && isSelected { animateIn(dayNumber: dayNumber) }
         }
     }
 
     private func animateIn(dayNumber: Int) {
-        // Reset immediately so the view is invisible/offset before the animation.
-        // The DispatchQueue call puts the animation in the NEXT run-loop frame,
-        // guaranteeing SwiftUI renders the reset state first — otherwise it
-        // collapses both into one frame and the fade-in never visibly fires.
-        contentVisible = false
-        displayDayNumber = 0
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            withAnimation(.spring(response: 0.55, dampingFraction: 0.78)) {
-                contentVisible = true
-            }
-            withAnimation(.spring(response: 0.65, dampingFraction: 0.7).delay(0.05)) {
-                displayDayNumber = dayNumber
-            }
+        // Fade from 0.1 → 1.0 over 2 seconds — slow and deliberate, like
+        // a page of a book gradually coming into focus.
+        withAnimation(.easeIn(duration: 2.0)) {
+            contentVisible = true
+        }
+        // Day-number digit-roll is snappier so it finishes well before
+        // the content fade and draws the eye to the date header.
+        withAnimation(.spring(response: 0.65, dampingFraction: 0.7)) {
+            displayDayNumber = dayNumber
         }
     }
 
