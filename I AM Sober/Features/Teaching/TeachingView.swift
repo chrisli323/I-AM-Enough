@@ -334,18 +334,17 @@ private struct DropCapBody: View {
     private var remainder: String { String(text.dropFirst()) }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
+        HStack(alignment: .firstTextBaseline, spacing: 0) {
             Text(firstChar)
-                .font(.system(size: 46, weight: .semibold, design: .serif))
+                .font(.system(size: 44, weight: .semibold, design: .serif))
                 .foregroundStyle(Theme.inkFadedDark)
-                // Pull the drop cap up so its visual cap-height aligns with the
-                // first line of body text. SwiftUI's .top alignment snaps layout
-                // frames, not rendered glyphs; the offset below compensates for
-                // the extra internal leading that a large serif font carries above
-                // its cap-height.
-                .alignmentGuide(.top) { d in d[.top] + 6 }
-                .padding(.trailing, 7)
-                .frame(width: 50, alignment: .leading)
+                // Raise the drop cap so its cap-height visually aligns with the
+                // top of the body text. firstTextBaseline alignment anchors the
+                // two baseline positions together; baselineOffset then lifts the
+                // cap upward by roughly (dropCapAscender - bodyAscender) so the
+                // tops register instead of the bottoms.
+                .baselineOffset(24)
+                .padding(.trailing, 8)
 
             Text(remainder)
                 .font(Theme.body())

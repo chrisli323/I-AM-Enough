@@ -36,6 +36,8 @@ struct ContentView: View {
                     .tag(Router.Tab.settings)
             }
             .toolbar(.hidden, for: .tabBar)
+            // Prevent the hidden UITabBar from painting a white strip
+            .toolbarBackground(.hidden, for: .tabBar)
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 CustomTabBar(selectedTab: $router.selectedTab)
                     .opacity(showingSplash ? 0 : 1)
@@ -192,12 +194,15 @@ private struct CustomTabBar: View {
         }
         .padding(.horizontal, 4)
         .background(
-            // Mirror the system tab bar: translucent material + gold top hairline
             ZStack(alignment: .top) {
+                // Solid parchment base so no system white bleeds through,
+                // then a thin material layer on top for the frosted-glass depth.
+                Theme.parchmentLight
                 Rectangle()
-                    .fill(.thinMaterial.opacity(0.82))
+                    .fill(.thinMaterial.opacity(0.55))
+                // Gold top hairline
                 Rectangle()
-                    .fill(Theme.accentGold.opacity(0.28))
+                    .fill(Theme.accentGold.opacity(0.35))
                     .frame(height: 0.5)
             }
         )
