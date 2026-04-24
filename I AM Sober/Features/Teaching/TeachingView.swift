@@ -423,7 +423,7 @@ private struct IntentionCountdown: View {
 
                 HStack(spacing: 7) {
                     Image(systemName: "hourglass")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 11, weight: .bold))
 
                     Group {
                         if days > 0 {
@@ -432,7 +432,7 @@ private struct IntentionCountdown: View {
                             Text("\(hours)h · \(minutes)m · \(String(format: "%02d", seconds))s")
                         }
                     }
-                    .font(Theme.smallCaps(20))
+                    .font(Theme.smallCaps(15))
                     .tracking(1.2)
                     .monospacedDigit()
                     .lineLimit(1)
