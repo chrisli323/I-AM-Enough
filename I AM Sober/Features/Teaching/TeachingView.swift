@@ -334,13 +334,24 @@ private struct DropCapBody: View {
     private var remainder: String { String(text.dropFirst()) }
 
     var body: some View {
-        (Text(firstChar)
-            .font(.system(size: 25, weight: .bold, design: .serif).italic())
-            .foregroundStyle(Theme.inkFadedDark)
-         + Text(remainder)
-            .font(Theme.body())
-            .foregroundStyle(Theme.ink))
-        .lineSpacing(Theme.bodyLineSpacing)
+        styledText
+            .lineSpacing(Theme.bodyLineSpacing)
+    }
+
+    /// Builds the mixed-size text using AttributedString so we avoid the
+    /// deprecated Text + Text concatenation operator flagged in Xcode 16+.
+    private var styledText: Text {
+        var cap = AttributedString(firstChar)
+        cap[AttributeScopes.SwiftUIAttributes.FontAttribute.self] =
+            .system(size: 35, weight: .bold, design: .serif)
+        cap[AttributeScopes.SwiftUIAttributes.ForegroundColorAttribute.self] =
+            Theme.inkFadedDark
+
+        var rest = AttributedString(remainder)
+        rest[AttributeScopes.SwiftUIAttributes.FontAttribute.self] = Theme.body()
+        rest[AttributeScopes.SwiftUIAttributes.ForegroundColorAttribute.self] = Theme.ink
+
+        return Text(cap + rest)
     }
 }
 
