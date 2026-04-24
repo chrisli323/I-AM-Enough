@@ -13,6 +13,7 @@
 
 import SwiftUI
 import SwiftData
+import Combine
 
 struct TeachingView: View {
     @Environment(AppState.self) private var appState
@@ -139,6 +140,12 @@ private struct TeachingPage: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 36) {
                 header(dayNumber: displayDayNumber, date: date)
+
+                // Intention countdown — only on today's page, only when a
+                // goal is active. The view manages its own 1-second timer.
+                if Calendar.current.isDateInToday(date) {
+                    IntentionCountdown()
+                }
 
                 // Top gold hairline — frames the teaching body like a printed page
                 Rectangle()
@@ -375,6 +382,72 @@ private struct TeachingPage: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.top, 0)
+    }
+}
+
+// MARK: - Intention countdown
+
+/// Live days · hours · minutes · seconds countdown shown on today's page
+/// when the user has an active intention challenge. Owns its own 1-second
+/// timer so it only ticks when visible. Color shifts to gold inside 24 hours
+/// to signal the final stretch without being dramatic about it.
+private struct IntentionCountdown: View {
+    @Environment(AppState.self) private var appState
+    @State private var now = Date()
+
+    /// Exact moment the challenge expires, or nil if none is active.
+    private var expiry: Date? {
+        let prefs = appState.preferences
+        guard prefs.intentionDurationDays > 0,
+              let start = prefs.intentionStartDate else { return nil }
+        return Calendar.current.date(
+            byAdding: .day, value: prefs.intentionDurationDays, to: start
+        )
+    }
+
+    var body: some View {
+        if let expiry {
+            let remaining  = max(0, expiry.timeIntervalSince(now))
+            let total      = Int(remaining)
+            let days       = total / 86_400
+            let hours      = (total % 86_400) / 3_600
+            let minutes    = (total % 3_600) / 60
+            let seconds    = total % 60
+            let finalDay   = days == 0
+            let accent     = finalDay ? Theme.accentGold : Theme.inkFaded
+
+            HStack(spacing: 12) {
+                Rectangle()
+                    .fill(accent.opacity(0.35))
+                    .frame(height: 0.5)
+
+                HStack(spacing: 5) {
+                    Image(systemName: "hourglass")
+                        .font(.system(size: 9, weight: .medium))
+
+                    Group {
+                        if days > 0 {
+                            Text("\(days)d · \(hours)h · \(minutes)m · \(String(format: "%02d", seconds))s")
+                        } else {
+                            Text("\(hours)h · \(minutes)m · \(String(format: "%02d", seconds))s")
+                        }
+                    }
+                    .font(Theme.smallCaps(10))
+                    .tracking(1.6)
+                    .monospacedDigit()
+                }
+                .foregroundStyle(accent)
+
+                Rectangle()
+                    .fill(accent.opacity(0.35))
+                    .frame(height: 0.5)
+            }
+            .onReceive(
+                Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+            ) { _ in
+                now = Date()
+            }
+        }
     }
 }
 
