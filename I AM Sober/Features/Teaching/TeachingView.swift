@@ -25,6 +25,10 @@ struct TeachingView: View {
     /// Becomes true once the splash screen has finished and the teaching
     /// content is actually visible to the user. Drives the initial fade-in.
     @State private var initialAnimReady = false
+    /// Toggled after a snap-back-to-today so today's TeachingPage knows to
+    /// call animateIn even though onChange(of: isSelected) may not fire
+    /// reliably for programmatic selectedIndex changes.
+    @State private var snapToTodaySignal = false
 
     var body: some View {
         // TODO: 🔒 FINAL BUILD — Remove previewDays and lock pageRange
@@ -41,7 +45,8 @@ struct TeachingView: View {
                     TeachingPage(
                         date: dateForOffset(daysFromToday),
                         isSelected: index == selectedIndex,
-                        initialAnimReady: initialAnimReady
+                        initialAnimReady: initialAnimReady,
+                        snapToTodaySignal: snapToTodaySignal
                     )
                     .tag(index)
                 }
@@ -68,8 +73,12 @@ struct TeachingView: View {
         }
         // Re-tapping the Today tab while already on it fires this signal.
         .onChange(of: appState.router.returnToTodayTrigger) { _, _ in
-            withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
-                selectedIndex = maxBackDays
+            selectedIndex = maxBackDays
+            // onChange(of: isSelected) is unreliable for programmatic changes,
+            // so explicitly signal today's page to run its animateIn after the
+            // TabView snap animation has had time to settle.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                snapToTodaySignal.toggle()
             }
         }
     }
@@ -131,6 +140,9 @@ private struct TeachingPage: View {
     let isSelected: Bool
     /// Passed down from TeachingView; becomes true once the splash is gone.
     let initialAnimReady: Bool
+    /// Toggled by TeachingView after a tap-Today-tab snap-back so this page
+    /// can call animateIn even when onChange(of: isSelected) doesn't fire.
+    let snapToTodaySignal: Bool
 
     @State private var isFavorited = false
     /// false = 35% opacity (passive/inactive); true = 100% (active).
@@ -215,6 +227,11 @@ private struct TeachingPage: View {
         // very first fade-in on today's page and enables swipe animations.
         .onChange(of: initialAnimReady) { _, nowReady in
             if nowReady && isSelected { animateIn(dayNumber: dayNumber) }
+        }
+        // Fired by TeachingView after a tap-Today snap-back. Only today's
+        // page responds; all others ignore it.
+        .onChange(of: snapToTodaySignal) { _, _ in
+            if Calendar.current.isDateInToday(date) { animateIn(dayNumber: dayNumber) }
         }
     }
 
