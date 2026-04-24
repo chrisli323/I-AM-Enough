@@ -416,14 +416,14 @@ private struct IntentionCountdown: View {
             let finalDay   = days == 0
             let accent     = finalDay ? Theme.accentGold : Theme.inkFaded
 
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 Rectangle()
                     .fill(accent.opacity(0.35))
                     .frame(height: 0.5)
 
-                HStack(spacing: 5) {
+                HStack(spacing: 7) {
                     Image(systemName: "hourglass")
-                        .font(.system(size: 9, weight: .medium))
+                        .font(.system(size: 14, weight: .medium))
 
                     Group {
                         if days > 0 {
@@ -432,10 +432,12 @@ private struct IntentionCountdown: View {
                             Text("\(hours)h · \(minutes)m · \(String(format: "%02d", seconds))s")
                         }
                     }
-                    .font(Theme.smallCaps(10))
-                    .tracking(1.6)
+                    .font(Theme.smallCaps(20))
+                    .tracking(1.2)
                     .monospacedDigit()
+                    .lineLimit(1)
                 }
+                .fixedSize(horizontal: true, vertical: false)
                 .foregroundStyle(accent)
 
                 Rectangle()
