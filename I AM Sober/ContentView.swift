@@ -24,24 +24,23 @@ struct ContentView: View {
         ZStack {
             TabView(selection: $router.selectedTab) {
                 TeachingView()
+                    .tabItem { Label("Today", systemImage: "sun.max") }
                     .tag(Router.Tab.home)
 
                 JournalListView()
+                    .tabItem { Label("Journal", systemImage: "book") }
                     .tag(Router.Tab.journal)
 
                 FavoritesView()
+                    .tabItem { Label("Favorites", systemImage: "heart") }
                     .tag(Router.Tab.favorites)
 
                 SettingsView()
+                    .tabItem { Label("Settings", systemImage: "gearshape") }
                     .tag(Router.Tab.settings)
             }
-            .toolbar(.hidden, for: .tabBar)
-            // Prevent the hidden UITabBar from painting a white strip
-            .toolbarBackground(.hidden, for: .tabBar)
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                CustomTabBar(selectedTab: $router.selectedTab)
-                    .opacity(showingSplash ? 0 : 1)
-            }
+            .toolbarBackground(.thinMaterial.opacity(0.45), for: .tabBar)
+            .tint(Theme.inkFadedDark)
             .opacity(showingSplash ? 0 : 1)
 
             if showingSplash {
@@ -137,77 +136,6 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Custom tab bar with micro-bounce
-
-/// A parchment-tinted tab bar where the selected icon springs upward with a
-/// brief overshoot when tapped — a small flourish that reinforces the warm,
-/// handcrafted feel of the rest of the app.
-private struct CustomTabBar: View {
-    @Binding var selectedTab: Router.Tab
-
-    /// The tab that most recently received a tap — drives the bounce animation.
-    @State private var bouncingTab: Router.Tab? = nil
-
-    private let items: [(tab: Router.Tab, icon: String, label: String)] = [
-        (.home,      "sun.max",   "Today"),
-        (.journal,   "book",      "Journal"),
-        (.favorites, "heart",     "Favorites"),
-        (.settings,  "gearshape", "Settings"),
-    ]
-
-    var body: some View {
-        HStack(spacing: 0) {
-            ForEach(items, id: \.tab) { item in
-                VStack(spacing: 4) {
-                    Image(systemName: item.icon)
-                        .font(.system(size: 21, weight: .regular))
-                        // Spring upward on selection, settle back in place
-                        .scaleEffect(bouncingTab == item.tab ? 1.38 : 1.0)
-                        .offset(y: bouncingTab == item.tab ? -3 : 0)
-                        .animation(
-                            .spring(response: 0.28, dampingFraction: 0.45),
-                            value: bouncingTab
-                        )
-
-                    Text(item.label)
-                        .font(Theme.smallCaps(9))
-                        .tracking(1.2)
-                }
-                .foregroundStyle(
-                    selectedTab == item.tab
-                        ? Theme.inkFadedDark
-                        : Theme.inkFaded.opacity(0.55)
-                )
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
-                // Use tap gesture instead of Button to avoid system press highlights
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    guard selectedTab != item.tab else { return }
-                    selectedTab = item.tab
-                    bouncingTab = item.tab
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
-                        if bouncingTab == item.tab { bouncingTab = nil }
-                    }
-                }
-            }
-        }
-        .padding(.horizontal, 4)
-        .background(
-            ZStack(alignment: .top) {
-                // Solid parchment base so no system white bleeds through,
-                // then a thin material layer on top for the frosted-glass depth.
-                Theme.parchmentLight
-                Rectangle()
-                    .fill(.thinMaterial.opacity(0.55))
-                // Gold top hairline
-                Rectangle()
-                    .fill(Theme.accentGold.opacity(0.35))
-                    .frame(height: 0.5)
-            }
-        )
-    }
-}
 
 #Preview {
     ContentView()
