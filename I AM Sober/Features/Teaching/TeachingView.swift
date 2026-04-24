@@ -166,9 +166,9 @@ private struct TeachingPage: View {
             .padding(.horizontal, Theme.pageHorizontalPadding)
             .padding(.top, 32)
             .frame(maxWidth: .infinity, alignment: .leading)
-            // Inactive pages sit at 35% — visible during the swipe gesture but
-            // clearly passive. animateIn brightens to 100% on settle.
-            .opacity(contentVisible ? 1.0 : 0.35)
+            // Inactive pages sit at 20% — barely present during the swipe gesture.
+            // animateIn brightens to 100% only after the page fully settles.
+            .opacity(contentVisible ? 1.0 : 0.20)
         }
         .scrollIndicators(.hidden)
         .contentMargins(.bottom, 0, for: .scrollContent)
@@ -182,12 +182,17 @@ private struct TeachingPage: View {
         // Fires when the user swipes to or away from this page.
         .onChange(of: isSelected) { _, nowSelected in
             if nowSelected {
-                // Only animate if the splash is already gone. During the
-                // initial selectedIndex jump (0 → today) the splash is still
-                // showing, so we defer to the initialAnimReady handler below.
-                if initialAnimReady { animateIn(dayNumber: dayNumber) }
+                // selectedIndex updates at the 50% swipe mark, not at full
+                // completion. Delay animateIn so the snap animation finishes
+                // first — this keeps the page at 20% opacity until it's fully
+                // within the frame, then brightens.
+                if initialAnimReady {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        animateIn(dayNumber: dayNumber)
+                    }
+                }
             } else {
-                // Dims to 35% off-screen so the next swipe-to gets a fresh
+                // Dims to 20% off-screen so the next swipe-to gets a fresh
                 // brighten. No animation needed — page is not visible.
                 contentVisible = false
                 displayDayNumber = 0
@@ -201,9 +206,9 @@ private struct TeachingPage: View {
     }
 
     private func animateIn(dayNumber: Int) {
-        // Brighten from 35% → 100%. Page was already at 35% (contentVisible
+        // Brighten from 20% → 100%. Page was already at 20% (contentVisible
         // false), so no flash — just a smooth easeOut brightening.
-        withAnimation(.easeOut(duration: 1.0)) {
+        withAnimation(.easeOut(duration: 1.5)) {
             contentVisible = true
         }
         withAnimation(.spring(response: 0.65, dampingFraction: 0.7)) {
