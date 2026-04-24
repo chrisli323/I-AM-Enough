@@ -208,7 +208,7 @@ private struct TeachingPage: View {
     private func animateIn(dayNumber: Int) {
         // Brighten from 20% → 100%. Page was already at 20% (contentVisible
         // false), so no flash — just a smooth easeOut brightening.
-        withAnimation(.easeOut(duration: 1.5)) {
+        withAnimation(.easeOut(duration: 0.45)) {
             contentVisible = true
         }
         withAnimation(.spring(response: 0.65, dampingFraction: 0.7)) {
