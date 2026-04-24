@@ -335,7 +335,7 @@ private struct DropCapBody: View {
 
     var body: some View {
         (Text(firstChar)
-            .font(.system(size: 30, weight: .bold, design: .serif).italic())
+            .font(.system(size: 25, weight: .bold, design: .serif).italic())
             .foregroundStyle(Theme.inkFadedDark)
          + Text(remainder)
             .font(Theme.body())
