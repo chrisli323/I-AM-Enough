@@ -154,9 +154,10 @@ private struct TeachingPage: View {
             .padding(.horizontal, Theme.pageHorizontalPadding)
             .padding(.top, 32)
             .frame(maxWidth: .infinity, alignment: .leading)
-            // Reveal animation — each page slides up and fades in when swiped to
+            // Reveal animation — each page slides up, scales in, and fades when swiped to
             .opacity(contentVisible ? 1 : 0)
-            .offset(y: contentVisible ? 0 : 12)
+            .offset(y: contentVisible ? 0 : 28)
+            .scaleEffect(contentVisible ? 1 : 0.96)
         }
         .scrollIndicators(.hidden)
         .contentMargins(.bottom, 0, for: .scrollContent)
@@ -180,13 +181,19 @@ private struct TeachingPage: View {
     }
 
     private func animateIn(dayNumber: Int) {
+        // Reset immediately so the view is invisible/offset before the animation.
+        // The DispatchQueue call puts the animation in the NEXT run-loop frame,
+        // guaranteeing SwiftUI renders the reset state first — otherwise it
+        // collapses both into one frame and the fade-in never visibly fires.
         contentVisible = false
         displayDayNumber = 0
-        withAnimation(.easeOut(duration: 0.38).delay(0.05)) {
-            contentVisible = true
-        }
-        withAnimation(.easeInOut(duration: 0.5).delay(0.15)) {
-            displayDayNumber = dayNumber
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.78)) {
+                contentVisible = true
+            }
+            withAnimation(.spring(response: 0.65, dampingFraction: 0.7).delay(0.05)) {
+                displayDayNumber = dayNumber
+            }
         }
     }
 
@@ -325,13 +332,17 @@ private struct TeachingPage: View {
             VStack(spacing: 14) {
                 HStack(spacing: 5) {
                     Text("\u{201C}") // opening curly double-quote
-                        .font(.system(size: 20, design: .serif))
+                        .font(.system(size: 24, design: .serif))
                         .foregroundStyle(Theme.accentGold.opacity(0.75))
-                        .offset(y: -1)
+                        .offset(y: -2)
                     Text("TO CARRY WITH YOU")
                         .font(Theme.smallCaps(10))
                         .tracking(2.6)
                         .foregroundStyle(Theme.inkFaded)
+                    Text("\u{201D}") // closing curly double-quote
+                        .font(.system(size: 24, design: .serif))
+                        .foregroundStyle(Theme.accentGold.opacity(0.75))
+                        .offset(y: -2)
                 }
 
                 Text(text)
