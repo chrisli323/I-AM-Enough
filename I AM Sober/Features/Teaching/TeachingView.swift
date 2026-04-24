@@ -126,8 +126,9 @@ private struct TeachingPage: View {
     let initialAnimReady: Bool
 
     @State private var isFavorited = false
-    /// false = barely visible (0.1 opacity); true = fully visible (1.0).
-    @State private var contentVisible = false
+    /// true = fully visible. Starts true so pages are always visible during
+    /// the swipe gesture; animateIn briefly resets to false then fades back.
+    @State private var contentVisible = true
     /// Animates from 0 → real day number each time this page becomes active,
     /// giving the digit-roll effect via .contentTransition(.numericText()).
     @State private var displayDayNumber: Int = 0
@@ -186,12 +187,10 @@ private struct TeachingPage: View {
                 // initial selectedIndex jump (0 → today) the splash is still
                 // showing, so we defer to the initialAnimReady handler below.
                 if initialAnimReady { animateIn(dayNumber: dayNumber) }
-            } else {
-                // Swiped away — silently reset so the next swipe back gets
-                // a fresh fade-in. No animation needed: page is off-screen.
-                contentVisible = false
-                displayDayNumber = 0
             }
+            // Swiping away: leave contentVisible = true so the page stays
+            // fully readable during the swipe gesture. animateIn handles the
+            // reset on the next swipe-to.
         }
         // Fires once after the splash has fully dismissed. Kicks off the
         // very first fade-in on today's page and enables swipe animations.
@@ -201,15 +200,20 @@ private struct TeachingPage: View {
     }
 
     private func animateIn(dayNumber: Int) {
-        // easeOut: the page rushes up from invisible quickly then settles
-        // into full opacity — clearly visible and still feels unhurried.
-        withAnimation(.easeOut(duration: 1.8)) {
-            contentVisible = true
-        }
-        // Day-number digit-roll is snappier so it finishes well before
-        // the content fade and draws the eye to the date header.
-        withAnimation(.spring(response: 0.65, dampingFraction: 0.7)) {
-            displayDayNumber = dayNumber
+        // Instantly hide — no animation wrapper, so it renders in one frame.
+        // Content is visible during the swipe (contentVisible was true), so
+        // this flash only occurs after the page has fully settled into place.
+        contentVisible = false
+        displayDayNumber = 0
+        // Next run-loop tick: fade back in. The DispatchQueue call guarantees
+        // SwiftUI renders the hidden state first before starting the animation.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            withAnimation(.easeOut(duration: 1.0)) {
+                contentVisible = true
+            }
+            withAnimation(.spring(response: 0.65, dampingFraction: 0.7)) {
+                displayDayNumber = dayNumber
+            }
         }
     }
 
