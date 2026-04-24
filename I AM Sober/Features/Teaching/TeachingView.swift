@@ -166,9 +166,9 @@ private struct TeachingPage: View {
             .padding(.horizontal, Theme.pageHorizontalPadding)
             .padding(.top, 32)
             .frame(maxWidth: .infinity, alignment: .leading)
-            // Pages rest at 10 % opacity when inactive and fade to full when active.
-            // No offset or scale — just a clean, slow fade so there is never a flash.
-            .opacity(contentVisible ? 1.0 : 0.1)
+            // Pages are invisible when inactive and fade to full when active.
+            // No offset or scale — just a clean fade so there is never a flash.
+            .opacity(contentVisible ? 1.0 : 0.0)
         }
         .scrollIndicators(.hidden)
         .contentMargins(.bottom, 0, for: .scrollContent)
@@ -201,9 +201,9 @@ private struct TeachingPage: View {
     }
 
     private func animateIn(dayNumber: Int) {
-        // Fade from 0.1 → 1.0 over 2 seconds — slow and deliberate, like
-        // a page of a book gradually coming into focus.
-        withAnimation(.easeIn(duration: 2.0)) {
+        // easeOut: the page rushes up from invisible quickly then settles
+        // into full opacity — clearly visible and still feels unhurried.
+        withAnimation(.easeOut(duration: 1.8)) {
             contentVisible = true
         }
         // Day-number digit-roll is snappier so it finishes well before
