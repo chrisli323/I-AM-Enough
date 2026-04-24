@@ -334,24 +334,13 @@ private struct DropCapBody: View {
     private var remainder: String { String(text.dropFirst()) }
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 0) {
-            Text(firstChar)
-                .font(.system(size: 44, weight: .semibold, design: .serif))
-                .foregroundStyle(Theme.inkFadedDark)
-                // Raise the drop cap so its cap-height visually aligns with the
-                // top of the body text. firstTextBaseline alignment anchors the
-                // two baseline positions together; baselineOffset then lifts the
-                // cap upward by roughly (dropCapAscender - bodyAscender) so the
-                // tops register instead of the bottoms.
-                .baselineOffset(24)
-                .padding(.trailing, 8)
-
-            Text(remainder)
-                .font(Theme.body())
-                .lineSpacing(Theme.bodyLineSpacing)
-                .foregroundStyle(Theme.ink)
-        }
-        .fixedSize(horizontal: false, vertical: true)
+        (Text(firstChar)
+            .font(.system(size: 40, weight: .bold, design: .serif))
+            .foregroundStyle(Theme.inkFadedDark)
+         + Text(remainder)
+            .font(Theme.body())
+            .foregroundStyle(Theme.ink))
+        .lineSpacing(Theme.bodyLineSpacing)
     }
 }
 
