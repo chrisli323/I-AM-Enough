@@ -22,7 +22,16 @@ struct ContentView: View {
         @Bindable var router = appState.router
 
         ZStack {
-            TabView(selection: $router.selectedTab) {
+            TabView(selection: Binding(
+                get: { router.selectedTab },
+                set: { newTab in
+                    if newTab == .home && router.selectedTab == .home {
+                        // Re-tap on the already-active Today tab — snap back to today.
+                        router.returnToTodayTrigger.toggle()
+                    }
+                    router.selectedTab = newTab
+                }
+            )) {
                 TeachingView()
                     .tabItem { Label("Today", systemImage: "sun.max") }
                     .tag(Router.Tab.home)

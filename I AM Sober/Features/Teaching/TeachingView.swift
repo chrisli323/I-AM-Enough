@@ -66,6 +66,12 @@ struct TeachingView: View {
                 initialAnimReady = true
             }
         }
+        // Re-tapping the Today tab while already on it fires this signal.
+        .onChange(of: appState.router.returnToTodayTrigger) { _, _ in
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
+                selectedIndex = maxBackDays
+            }
+        }
     }
 
     // MARK: - Fixed Audio Toggle

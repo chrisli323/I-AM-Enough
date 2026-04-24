@@ -32,6 +32,10 @@ final class Router {
     /// When true, the congratulations sheet is shown over the Today tab.
     var showCongratulations = false
 
+    /// Toggled each time the user taps the Today tab while already on it.
+    /// TeachingView watches this to snap the pager back to the current day.
+    var returnToTodayTrigger = false
+
     func openJournal(for date: Date) {
         pendingJournalDate = date
         selectedTab = .journal
