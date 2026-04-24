@@ -187,7 +187,7 @@ private struct TeachingPage: View {
                 // first — this keeps the page at 20% opacity until it's fully
                 // within the frame, then brightens.
                 if initialAnimReady {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                         animateIn(dayNumber: dayNumber)
                     }
                 }
@@ -208,7 +208,7 @@ private struct TeachingPage: View {
     private func animateIn(dayNumber: Int) {
         // Brighten from 20% → 100%. Page was already at 20% (contentVisible
         // false), so no flash — just a smooth easeOut brightening.
-        withAnimation(.easeOut(duration: 0.45)) {
+        withAnimation(.easeOut(duration: 1.0)) {
             contentVisible = true
         }
         withAnimation(.spring(response: 0.65, dampingFraction: 0.7)) {
