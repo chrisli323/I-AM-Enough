@@ -258,6 +258,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "I AM Enough";
 				INFOPLIST_KEY_NSCameraUsageDescription = "I AM Enough uses your camera so you can attach a photo to a journal entry. Photos stay private on your device only.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "I AM Enough saves your journal photo to your camera roll only when you ask it to.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -292,6 +293,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "I AM Enough";
 				INFOPLIST_KEY_NSCameraUsageDescription = "I AM Enough uses your camera so you can attach a photo to a journal entry. Photos stay private on your device only.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "I AM Enough saves your journal photo to your camera roll only when you ask it to.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

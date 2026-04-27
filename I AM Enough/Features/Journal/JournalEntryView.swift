@@ -12,6 +12,7 @@
 import SwiftUI
 import PhotosUI
 import SwiftData
+import Photos
 
 struct JournalEntryView: View {
     @Environment(AppState.self) private var appState
@@ -29,6 +30,7 @@ struct JournalEntryView: View {
     @State private var showingCamera = false
     @State private var pickerItem: PhotosPickerItem?
     @State private var photoJiggling = false
+    @State private var saveToastVisible = false
 
     @FocusState private var editorFocused: Bool
 
@@ -264,8 +266,22 @@ struct JournalEntryView: View {
                         withAnimation { photoJiggling = false }
                     }
                 }
+                .overlay(alignment: .bottom) {
+                    // "Saved" toast — floats above the photo briefly after saving
+                    if saveToastVisible {
+                        Label("Saved to Camera Roll", systemImage: "checkmark.circle.fill")
+                            .font(Theme.smallCaps(11))
+                            .tracking(0.8)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .background(.black.opacity(0.55), in: Capsule())
+                            .padding(.bottom, 14)
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
+                }
 
-            // Delete badge — appears when jiggling
+            // Delete badge — top-left, appears when jiggling
             if photoJiggling {
                 Button {
                     withAnimation(.snappy) {
@@ -281,6 +297,38 @@ struct JournalEntryView: View {
                 }
                 .offset(x: -8, y: -8)
                 .transition(.scale.combined(with: .opacity))
+            }
+
+            // Save badge — top-right, appears when jiggling
+            if photoJiggling {
+                HStack {
+                    Spacer()
+                    Button {
+                        withAnimation(.snappy) { photoJiggling = false }
+                        saveToCamera(image)
+                    } label: {
+                        Image(systemName: "square.and.arrow.down.fill")
+                            .font(.title2)
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(.white, Color(red: 0.20, green: 0.55, blue: 0.30))
+                            .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                    }
+                    .offset(x: 8, y: -8)
+                }
+                .transition(.scale.combined(with: .opacity))
+            }
+        }
+    }
+
+    private func saveToCamera(_ image: UIImage) {
+        PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
+            DispatchQueue.main.async {
+                guard status == .authorized || status == .limited else { return }
+                UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+                withAnimation(.easeInOut(duration: 0.3)) { saveToastVisible = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
+                    withAnimation(.easeInOut(duration: 0.4)) { saveToastVisible = false }
+                }
             }
         }
     }
