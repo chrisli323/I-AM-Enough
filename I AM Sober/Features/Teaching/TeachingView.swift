@@ -38,6 +38,7 @@ struct TeachingView: View {
 
         ZStack {
             Theme.parchmentBackground
+                .ignoresSafeArea()
 
             PageCurlView(
                 pageRange: pageRange,
@@ -51,6 +52,7 @@ struct TeachingView: View {
                     snapToTodaySignal: snapToTodaySignal
                 )
             }
+            .ignoresSafeArea()
 
             // Fixed audio toggle — anchored to the view, not the page content
             audioToggle
