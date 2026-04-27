@@ -19,6 +19,7 @@ struct SettingsView: View {
     @State private var showingWelcome = false
     @State private var showingIntentionSetup = false
     @State private var selectedChallengeDays: Int? = nil
+    @State private var intentionNameText: String = ""
     @State private var showingCancelIntentionConfirm = false
 
     var body: some View {
@@ -140,21 +141,23 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showingIntentionSetup) {
             IntentionSetupSheet(selectedDays: $selectedChallengeDays,
+                               intentionName: $intentionNameText,
                                isIntentionActive: appState.preferences.intentionDurationDays > 0) {
                 if let days = selectedChallengeDays {
                     if days == -1 {
                         // ⚠️ TODO: REMOVE BEFORE RELEASE — 1-minute test mode (Bronze)
-                        appState.preferences.setIntention(days: 1)
+                        appState.preferences.setIntention(days: 1, name: intentionNameText)
                         appState.preferences.intentionExpiryDate = Date().addingTimeInterval(60)
                     } else if days == -2 {
                         // ⚠️ TODO: REMOVE BEFORE RELEASE — 1-minute test mode (Platinum)
-                        appState.preferences.setIntention(days: 365)
+                        appState.preferences.setIntention(days: 365, name: intentionNameText)
                         appState.preferences.intentionExpiryDate = Date().addingTimeInterval(60)
                     } else {
-                        appState.preferences.setIntention(days: days)
+                        appState.preferences.setIntention(days: days, name: intentionNameText)
                         appState.notificationService.scheduleIntentionCompletion(in: days)
                     }
                 }
+                intentionNameText = ""
                 showingIntentionSetup = false
             }
             .presentationDetents([.large])
@@ -332,11 +335,12 @@ struct SettingsView: View {
                 settingsIcon("flag", color: active ? sageGreen : Theme.accentGold)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Set an Intention")
+                    let name = appState.preferences.intentionName
+                    Text(active && !name.isEmpty ? name.capitalized : "Set an Intention")
                         .font(Theme.body(16))
                         .foregroundStyle(Theme.ink)
                     Text(active
-                         ? "\(appState.preferences.intentionDurationDays)-day challenge active"
+                         ? "\(appState.preferences.intentionDurationDays)-day challenge · in progress"
                          : "Set a goal or challenge for yourself")
                         .font(Theme.bodyItalic(13))
                         .foregroundStyle(Theme.inkFaded)

@@ -10,10 +10,12 @@ import SwiftUI
 
 struct IntentionSetupSheet: View {
     @Binding var selectedDays: Int?
+    @Binding var intentionName: String
     var isIntentionActive: Bool
     var onBegin: () -> Void
 
     @State private var showingReplaceAlert = false
+    @FocusState private var nameFieldFocused: Bool
 
     private let gridChallenges: [(label: String, days: Int)] = [
         ("1 Min ⚡",  -1),  // ⚠️ TODO: REMOVE BEFORE RELEASE — test only
@@ -65,7 +67,41 @@ struct IntentionSetupSheet: View {
                         .foregroundStyle(Theme.inkSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 8)
-                        .padding(.bottom, 32)
+                        .padding(.bottom, 28)
+
+                    // ── Intention name field ──────────────────────────────
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("NAME YOUR INTENTION")
+                            .font(Theme.smallCaps(9))
+                            .tracking(2.6)
+                            .foregroundStyle(Theme.inkFaded)
+
+                        TextField("e.g. quit smoking, no sugar, daily gym…", text: $intentionName)
+                            .font(Theme.body(15))
+                            .foregroundStyle(Theme.ink)
+                            .tint(Theme.accentGold)
+                            .focused($nameFieldFocused)
+                            .submitLabel(.done)
+                            .onSubmit { nameFieldFocused = false }
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                            .background(Theme.parchmentDark.opacity(0.35), in: RoundedRectangle(cornerRadius: 10))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .strokeBorder(
+                                        nameFieldFocused
+                                            ? Theme.accentGold.opacity(0.55)
+                                            : Theme.accentGold.opacity(0.20),
+                                        lineWidth: nameFieldFocused ? 1.0 : 0.6
+                                    )
+                            )
+
+                        Text("Optional — this label will appear on your teaching page.")
+                            .font(Theme.bodyItalic(12))
+                            .foregroundStyle(Theme.inkFaded.opacity(0.7))
+                    }
+                    .padding(.bottom, 24)
+                    .onTapGesture { nameFieldFocused = true }
 
                     // ── 3-column grid (first 6 challenges) ───────────────
                     LazyVGrid(columns: columns, spacing: 12) {

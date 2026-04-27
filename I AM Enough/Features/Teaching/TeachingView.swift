@@ -460,33 +460,46 @@ private struct IntentionCountdown: View {
             let finalDay   = days == 0
             let accent     = finalDay ? Theme.accentGold : Theme.inkFaded
 
-            HStack(spacing: 10) {
-                Rectangle()
-                    .fill(accent.opacity(0.35))
-                    .frame(height: 0.5)
-
-                HStack(spacing: 7) {
-                    Image(systemName: "hourglass")
-                        .font(.system(size: 11, weight: .bold))
-
-                    Group {
-                        if days > 0 {
-                            Text("\(days)d · \(hours)h · \(minutes)m · \(String(format: "%02d", seconds))s")
-                        } else {
-                            Text("\(hours)h · \(minutes)m · \(String(format: "%02d", seconds))s")
-                        }
-                    }
-                    .font(Theme.smallCaps(15))
-                    .tracking(1.2)
-                    .monospacedDigit()
-                    .lineLimit(1)
+            VStack(spacing: 8) {
+                // Intention name headline — only shown when the user named their goal
+                let name = appState.preferences.intentionName
+                if !name.isEmpty {
+                    Text(name.uppercased())
+                        .font(Theme.smallCaps(11))
+                        .tracking(2.8)
+                        .foregroundStyle(accent)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                 }
-                .fixedSize(horizontal: true, vertical: false)
-                .foregroundStyle(accent)
 
-                Rectangle()
-                    .fill(accent.opacity(0.35))
-                    .frame(height: 0.5)
+                HStack(spacing: 10) {
+                    Rectangle()
+                        .fill(accent.opacity(0.35))
+                        .frame(height: 0.5)
+
+                    HStack(spacing: 7) {
+                        Image(systemName: "hourglass")
+                            .font(.system(size: 11, weight: .bold))
+
+                        Group {
+                            if days > 0 {
+                                Text("\(days)d · \(hours)h · \(minutes)m · \(String(format: "%02d", seconds))s")
+                            } else {
+                                Text("\(hours)h · \(minutes)m · \(String(format: "%02d", seconds))s")
+                            }
+                        }
+                        .font(Theme.smallCaps(15))
+                        .tracking(1.2)
+                        .monospacedDigit()
+                        .lineLimit(1)
+                    }
+                    .fixedSize(horizontal: true, vertical: false)
+                    .foregroundStyle(accent)
+
+                    Rectangle()
+                        .fill(accent.opacity(0.35))
+                        .frame(height: 0.5)
+                }
             }
             .onReceive(
                 Timer.publish(every: 1, on: .main, in: .common).autoconnect()

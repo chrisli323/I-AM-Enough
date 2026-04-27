@@ -227,6 +227,19 @@ final class UserPreferences {
         }
     }
 
+    /// The user-supplied label for their current intention (e.g. "quit smoking"). Empty string if unnamed.
+    var intentionName: String {
+        get {
+            access(keyPath: \.intentionName)
+            return defaults.string(forKey: Keys.intentionName) ?? ""
+        }
+        set {
+            withMutation(keyPath: \.intentionName) {
+                defaults.set(newValue, forKey: Keys.intentionName)
+            }
+        }
+    }
+
     /// The duration in days of the active intention challenge. 0 = no challenge set.
     var intentionDurationDays: Int {
         get {
@@ -253,9 +266,10 @@ final class UserPreferences {
     }
 
     /// Start a new intention challenge, overwriting any active one.
-    func setIntention(days: Int) {
+    func setIntention(days: Int, name: String = "") {
         intentionStartDate = Date()
         intentionDurationDays = days
+        intentionName = name.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     // ⚠️ TODO: REMOVE BEFORE RELEASE — test-only exact expiry timestamp
@@ -275,6 +289,7 @@ final class UserPreferences {
     func clearIntention() {
         intentionStartDate = nil
         intentionDurationDays = 0
+        intentionName = ""
         intentionExpiryDate = nil   // ⚠️ TODO: REMOVE WITH intentionExpiryDate
     }
 
@@ -307,6 +322,7 @@ final class UserPreferences {
         static let hasSeenWelcome = "hasSeenWelcome"
         static let intentionStartDate = "intentionStartDate"
         static let intentionDurationDays = "intentionDurationDays"
+        static let intentionName = "intentionName"
         static let intentionExpiryDate = "intentionExpiryDate" // ⚠️ TODO: REMOVE BEFORE RELEASE
     }
 }
