@@ -22,4 +22,8 @@ struct Teaching: Identifiable, Codable, Hashable {
     /// Replaces the generic "How are you feeling today?" heading in the journal
     /// editor to invite genuine self-discovery and emotional connection.
     let journalPrompt: String
+    /// A short identity-based affirmation beginning with "Today I AM…", thematically
+    /// tied to this day's teaching body. Displayed between the Day N header and the
+    /// main teaching text.
+    let affirmation: String
 }

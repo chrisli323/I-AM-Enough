@@ -70,7 +70,8 @@ final class TeachingStore {
                     id: -entry.day, // negative IDs distinguish milestones
                     body: entry.body,
                     reflection: entry.reflection,
-                    journalPrompt: entry.journalPrompt ?? "What is present in you today that deserves to be written down?"
+                    journalPrompt: entry.journalPrompt ?? "What is present in you today that deserves to be written down?",
+                    affirmation: entry.affirmation ?? "Today I AM exactly where I need to be on this journey."
                 )
             }
         } catch {
@@ -82,7 +83,8 @@ final class TeachingStore {
         id: 0,
         body: "Take one full breath. You are here. That alone is enough for this moment.",
         reflection: "Whatever today holds, return to the breath. It is always available.",
-        journalPrompt: "What are you feeling right now, in this moment, without any need to explain or justify it?"
+        journalPrompt: "What are you feeling right now, in this moment, without any need to explain or justify it?",
+        affirmation: "Today I AM present, breathing, and enough."
     )
 }
 
@@ -93,4 +95,5 @@ private struct MilestoneEntry: Codable {
     let body: String
     let reflection: String
     let journalPrompt: String?
+    let affirmation: String?
 }

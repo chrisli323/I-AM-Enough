@@ -166,6 +166,8 @@ struct TeachingPage: View {
                     IntentionCountdown()
                 }
 
+                affirmationBlock(teaching.affirmation)
+
                 // Top gold hairline — frames the teaching body like a printed page
                 Rectangle()
                     .fill(Theme.accentGold.opacity(0.28))
@@ -245,6 +247,30 @@ struct TeachingPage: View {
     }
 
     // MARK: - Subviews
+
+    @ViewBuilder
+    private func affirmationBlock(_ text: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            // Label with a thin gold rule beneath — matches the page's hairline aesthetic
+            VStack(alignment: .leading, spacing: 4) {
+                Text("MY DAILY AFFIRMATION")
+                    .font(Theme.smallCaps(10))
+                    .tracking(2.4)
+                    .foregroundStyle(Theme.inkFaded)
+                Rectangle()
+                    .fill(Theme.accentGold.opacity(0.45))
+                    .frame(height: 0.5)
+            }
+            // "Today I AM…" — italic, warm secondary ink
+            Text(text)
+                .font(Theme.bodyItalic(16))
+                .foregroundStyle(Theme.inkSecondary)
+                .lineSpacing(5)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 2)
+        }
+        .padding(.vertical, 4)
+    }
 
     @ViewBuilder
     private func header(dayNumber: Int, date: Date) -> some View {
