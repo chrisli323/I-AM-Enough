@@ -55,7 +55,7 @@ struct CongratulatoryView: View {
                             .foregroundStyle(Theme.ink)
 
                         if !challengeName.isEmpty {
-                            Text("\(challengeDays) days · \(challengeName.capitalized)")
+                            Text("\(challengeName.capitalized) for \(challengeDays) days")
                                 .font(.system(size: 22, weight: .bold, design: .serif))
                                 .foregroundStyle(Theme.inkSecondary)
                                 .multilineTextAlignment(.center)
