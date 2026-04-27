@@ -67,7 +67,7 @@ enum PhotoStorage {
             appropriateFor: nil,
             create: true
         )
-        var directory = appSupport.appendingPathComponent("JournalPhotos", isDirectory: true)
+		let directory = appSupport.appendingPathComponent("JournalPhotos", isDirectory: true)
         if !fm.fileExists(atPath: directory.path) {
             try fm.createDirectory(at: directory, withIntermediateDirectories: true)
         }
