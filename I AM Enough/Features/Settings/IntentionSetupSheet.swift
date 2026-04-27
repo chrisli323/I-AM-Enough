@@ -119,6 +119,8 @@ struct IntentionSetupSheet: View {
                 .frame(maxWidth: .infinity)
             }
             .scrollIndicators(.hidden)
+            .scrollDismissesKeyboard(.immediately)
+            .onTapGesture { nameFieldFocused = false }
 
             // ── Pinned Begin button ───────────────────────────────────────
             VStack(spacing: 0) {
