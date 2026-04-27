@@ -12,6 +12,7 @@ import SwiftUI
 
 struct CongratulatoryView: View {
     let challengeDays: Int
+    let challengeName: String
     var onDismiss: () -> Void
 
     var body: some View {
@@ -48,10 +49,19 @@ struct CongratulatoryView: View {
                         .padding(.bottom, 28)
 
                     // ── Hero line ─────────────────────────────────────────
-                    Text("You did it.")
-                        .font(Theme.bodyItalic(32))
-                        .foregroundStyle(Theme.ink)
-                        .padding(.bottom, 32)
+                    VStack(spacing: 10) {
+                        Text("You did it!")
+                            .font(Theme.bodyItalic(32))
+                            .foregroundStyle(Theme.ink)
+
+                        if !challengeName.isEmpty {
+                            Text("\(challengeDays) days · \(challengeName.capitalized)")
+                                .font(.system(size: 22, weight: .bold, design: .serif))
+                                .foregroundStyle(Theme.inkSecondary)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+                    .padding(.bottom, 32)
 
                     // ── Body ─────────────────────────────────────────────
                     Text("You set a goal and you kept your word.\nThat's not nothing — that's everything.")
