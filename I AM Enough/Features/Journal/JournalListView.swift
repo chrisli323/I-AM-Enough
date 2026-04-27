@@ -124,7 +124,7 @@ private struct JournalEntryRow: View {
                         .foregroundStyle(Theme.ink)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
-                } else if entry.photoFilename != nil {
+                } else if entry.photoFilename != nil || !entry.photoFilenames.isEmpty {
                     Text("(Photo entry)")
                         .font(Theme.bodyItalic(14))
                         .foregroundStyle(Theme.inkFaded)
@@ -139,7 +139,8 @@ private struct JournalEntryRow: View {
 
             Spacer(minLength: 0)
 
-            if let filename = entry.photoFilename,
+            let thumbFilename = entry.photoFilenames.first ?? entry.photoFilename
+            if let filename = thumbFilename,
                let image = PhotoStorage.load(filename) {
                 Image(uiImage: image)
                     .resizable()

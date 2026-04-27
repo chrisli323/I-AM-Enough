@@ -2,11 +2,10 @@
 //  JournalEntryView.swift
 //  I AM Sober
 //
-//  Detail view for a single day's journal entry. Loads (or creates) the
-//  entry for `date`, shows the teaching that prompted it as a collapsible
-//  reminder at the top, then a full-screen editor with the reflection
-//  prompt as placeholder text. A camera/photo button at the bottom lets
-//  the user attach (or replace) one image.
+//  Detail view for a single day's journal entry. Supports multiple
+//  attached photos — tap the camera icon to add more via the camera or
+//  photo library. Long-press any photo to delete it or save it to the
+//  camera roll.
 //
 
 import SwiftUI
@@ -23,14 +22,21 @@ struct JournalEntryView: View {
 
     @State private var entry: JournalEntry?
     @State private var bodyText: String = ""
-    @State private var attachedImage: UIImage?
-    @State private var teachingExpanded: Bool = false
 
+    /// Loaded / newly-captured images in display order.
+    @State private var attachedImages: [UIImage] = []
+    /// Parallel array of on-disk filenames. nil = not yet saved to disk.
+    @State private var attachedFilenames: [String?] = []
+
+    @State private var teachingExpanded: Bool = false
     @State private var showingPhotoMenu = false
     @State private var showingCamera = false
-    @State private var pickerItem: PhotosPickerItem?
-    @State private var photoJiggling = false
-    @State private var saveToastVisible = false
+    @State private var pickerItems: [PhotosPickerItem] = []
+
+    /// Index of the photo currently jiggling (only one at a time).
+    @State private var jigglingIndex: Int? = nil
+    /// Index of the photo showing the "Saved" toast.
+    @State private var toastIndex: Int? = nil
 
     @FocusState private var editorFocused: Bool
 
@@ -50,8 +56,9 @@ struct JournalEntryView: View {
 
                     editor(for: teaching)
 
-                    if let attachedImage {
-                        attachedPhoto(attachedImage)
+                    // Photos — stacked vertically, each with its own controls
+                    ForEach(attachedImages.indices, id: \.self) { i in
+                        attachedPhoto(at: i)
                     }
 
                     Spacer(minLength: 40)
@@ -63,6 +70,9 @@ struct JournalEntryView: View {
             .scrollIndicators(.hidden)
             .onTapGesture {
                 editorFocused = false
+                if jigglingIndex != nil {
+                    withAnimation { jigglingIndex = nil }
+                }
             }
         }
         .toolbarBackground(Theme.parchmentLight, for: .navigationBar)
@@ -73,7 +83,7 @@ struct JournalEntryView: View {
                 Button {
                     showingPhotoMenu = true
                 } label: {
-                    Image(systemName: attachedImage == nil ? "camera" : "camera.fill")
+                    Image(systemName: attachedImages.isEmpty ? "camera" : "camera.badge.plus")
                         .foregroundStyle(Theme.inkSecondary)
                 }
             }
@@ -90,29 +100,38 @@ struct JournalEntryView: View {
             Button("Take a Photo") { showingCamera = true }
             PhotosPicker(
                 "Choose from Library",
-                selection: $pickerItem,
+                selection: $pickerItems,
+                maxSelectionCount: 0,       // 0 = unlimited
                 matching: .images,
                 photoLibrary: .shared()
             )
-            if attachedImage != nil {
-                Button("Remove Photo", role: .destructive) {
-                    removePhoto()
-                }
-            }
             Button("Cancel", role: .cancel) {}
         }
         .fullScreenCover(isPresented: $showingCamera) {
-            CameraPicker(image: $attachedImage)
+            CameraPicker(images: $attachedImages)
                 .ignoresSafeArea()
         }
-        .onChange(of: pickerItem) { _, newItem in
-            guard let newItem else { return }
+        .onChange(of: attachedImages.count) { old, new in
+            // When camera appends a new image, extend filenames array with nil.
+            if new > attachedFilenames.count {
+                let added = new - attachedFilenames.count
+                attachedFilenames.append(contentsOf: [String?](repeating: nil, count: added))
+            }
+        }
+        .onChange(of: pickerItems) { _, newItems in
+            guard !newItems.isEmpty else { return }
             Task {
-                if let data = try? await newItem.loadTransferable(type: Data.self),
-                   let image = UIImage(data: data) {
-                    await MainActor.run {
-                        attachedImage = image
+                var loaded: [UIImage] = []
+                for item in newItems {
+                    if let data = try? await item.loadTransferable(type: Data.self),
+                       let image = UIImage(data: data) {
+                        loaded.append(image)
                     }
+                }
+                await MainActor.run {
+                    attachedImages.append(contentsOf: loaded)
+                    attachedFilenames.append(contentsOf: [String?](repeating: nil, count: loaded.count))
+                    pickerItems = []
                 }
             }
         }
@@ -196,9 +215,6 @@ struct JournalEntryView: View {
                 .foregroundStyle(Theme.ink)
 
             ZStack(alignment: .topLeading) {
-                // Hidden sizing text — mirrors the editor content so the
-                // frame grows/shrinks dynamically with the actual text.
-                // The 2-line minimum keeps the field from collapsing to zero.
                 Text(bodyText.isEmpty ? " \n " : bodyText + " ")
                     .font(Theme.body(17))
                     .lineSpacing(6)
@@ -236,98 +252,104 @@ struct JournalEntryView: View {
         .padding(.top, 8)
     }
 
-    private func attachedPhoto(_ image: UIImage) -> some View {
-        ZStack(alignment: .topLeading) {
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFit()
-                .frame(maxWidth: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Theme.accentGold.opacity(0.35), lineWidth: 0.6)
-                )
-                .shadow(color: Theme.ink.opacity(0.3), radius: 8, x: 0, y: 4)
-                .shadow(color: Theme.parchmentShadow.opacity(0.2), radius: 3, x: 0, y: 2)
-                .rotationEffect(photoJiggling ? .degrees(0.8) : .degrees(-0.8))
-                .animation(
-                    photoJiggling
-                        ? .easeInOut(duration: 0.12).repeatForever(autoreverses: true)
-                        : .default,
-                    value: photoJiggling
-                )
-                .onLongPressGesture {
-                    let generator = UIImpactFeedbackGenerator(style: .medium)
-                    generator.impactOccurred()
-                    withAnimation { photoJiggling = true }
-                }
-                .onTapGesture {
-                    if photoJiggling {
-                        withAnimation { photoJiggling = false }
-                    }
-                }
-                .overlay(alignment: .bottom) {
-                    // "Saved" toast — floats above the photo briefly after saving
-                    if saveToastVisible {
-                        Label("Saved to Camera Roll", systemImage: "checkmark.circle.fill")
-                            .font(Theme.smallCaps(11))
-                            .tracking(0.8)
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .background(.black.opacity(0.55), in: Capsule())
-                            .padding(.bottom, 14)
-                            .transition(.opacity.combined(with: .move(edge: .bottom)))
-                    }
-                }
+    @ViewBuilder
+    private func attachedPhoto(at index: Int) -> some View {
+        if index < attachedImages.count {
+            let image = attachedImages[index]
+            let isJiggling = jigglingIndex == index
+            let showToast = toastIndex == index
 
-            // Delete badge — top-left, appears when jiggling
-            if photoJiggling {
-                Button {
-                    withAnimation(.snappy) {
-                        photoJiggling = false
-                        removePhoto()
+            ZStack(alignment: .topLeading) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Theme.accentGold.opacity(0.35), lineWidth: 0.6)
+                    )
+                    .shadow(color: Theme.ink.opacity(0.3), radius: 8, x: 0, y: 4)
+                    .shadow(color: Theme.parchmentShadow.opacity(0.2), radius: 3, x: 0, y: 2)
+                    .rotationEffect(isJiggling ? .degrees(0.8) : .degrees(-0.8))
+                    .animation(
+                        isJiggling
+                            ? .easeInOut(duration: 0.12).repeatForever(autoreverses: true)
+                            : .default,
+                        value: isJiggling
+                    )
+                    .onLongPressGesture {
+                        let generator = UIImpactFeedbackGenerator(style: .medium)
+                        generator.impactOccurred()
+                        withAnimation { jigglingIndex = index }
                     }
-                } label: {
-                    Image(systemName: "minus.circle.fill")
-                        .font(.title2)
-                        .symbolRenderingMode(.palette)
-                        .foregroundStyle(.white, .red)
-                        .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
-                }
-                .offset(x: -8, y: -8)
-                .transition(.scale.combined(with: .opacity))
-            }
+                    .onTapGesture {
+                        if jigglingIndex != nil {
+                            withAnimation { jigglingIndex = nil }
+                        }
+                    }
+                    .overlay(alignment: .bottom) {
+                        if showToast {
+                            Label("Saved to Camera Roll", systemImage: "checkmark.circle.fill")
+                                .font(Theme.smallCaps(11))
+                                .tracking(0.8)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                .background(.black.opacity(0.55), in: Capsule())
+                                .padding(.bottom, 14)
+                                .transition(.opacity.combined(with: .move(edge: .bottom)))
+                        }
+                    }
 
-            // Save badge — top-right, appears when jiggling
-            if photoJiggling {
-                HStack {
-                    Spacer()
+                // Delete badge — top-left
+                if isJiggling {
                     Button {
-                        withAnimation(.snappy) { photoJiggling = false }
-                        saveToCamera(image)
+                        withAnimation(.snappy) {
+                            jigglingIndex = nil
+                            removePhoto(at: index)
+                        }
                     } label: {
-                        Image(systemName: "square.and.arrow.down.fill")
+                        Image(systemName: "minus.circle.fill")
                             .font(.title2)
                             .symbolRenderingMode(.palette)
-                            .foregroundStyle(.white, Color(red: 0.20, green: 0.55, blue: 0.30))
+                            .foregroundStyle(.white, .red)
                             .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
                     }
-                    .offset(x: 8, y: -8)
+                    .offset(x: -8, y: -8)
+                    .transition(.scale.combined(with: .opacity))
                 }
-                .transition(.scale.combined(with: .opacity))
+
+                // Save badge — top-right
+                if isJiggling {
+                    HStack {
+                        Spacer()
+                        Button {
+                            withAnimation(.snappy) { jigglingIndex = nil }
+                            saveToCamera(image, index: index)
+                        } label: {
+                            Image(systemName: "square.and.arrow.down.fill")
+                                .font(.title2)
+                                .symbolRenderingMode(.palette)
+                                .foregroundStyle(.white, Color(red: 0.20, green: 0.55, blue: 0.30))
+                                .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                        }
+                        .offset(x: 8, y: -8)
+                    }
+                    .transition(.scale.combined(with: .opacity))
+                }
             }
         }
     }
 
-    private func saveToCamera(_ image: UIImage) {
+    private func saveToCamera(_ image: UIImage, index: Int) {
         PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
             DispatchQueue.main.async {
                 guard status == .authorized || status == .limited else { return }
                 UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
-                withAnimation(.easeInOut(duration: 0.3)) { saveToastVisible = true }
+                withAnimation(.easeInOut(duration: 0.3)) { toastIndex = index }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.2) {
-                    withAnimation(.easeInOut(duration: 0.4)) { saveToastVisible = false }
+                    withAnimation(.easeInOut(duration: 0.4)) { toastIndex = nil }
                 }
             }
         }
@@ -340,24 +362,38 @@ struct JournalEntryView: View {
         let descriptor = FetchDescriptor<JournalEntry>(
             predicate: #Predicate { $0.dateKey == key }
         )
-        if let existing = try? modelContext.fetch(descriptor).first {
-            entry = existing
-            bodyText = existing.body
-            if let filename = existing.photoFilename {
-                attachedImage = PhotoStorage.load(filename)
+        guard let existing = try? modelContext.fetch(descriptor).first else { return }
+        entry = existing
+        bodyText = existing.body
+
+        // Migrate legacy single-photo to array format
+        if let legacyFilename = existing.photoFilename, existing.photoFilenames.isEmpty {
+            existing.photoFilenames = [legacyFilename]
+            existing.photoFilename = nil
+            try? modelContext.save()
+        }
+
+        // Load all photos
+        var images: [UIImage] = []
+        var filenames: [String?] = []
+        for filename in existing.photoFilenames {
+            if let img = PhotoStorage.load(filename) {
+                images.append(img)
+                filenames.append(filename)
             }
         }
+        attachedImages = images
+        attachedFilenames = filenames
     }
 
     private func save() {
         let trimmed = bodyText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let hasContent = !trimmed.isEmpty || attachedImage != nil
+        let hasContent = !trimmed.isEmpty || !attachedImages.isEmpty
 
         if let existing = entry {
-            // Update existing
             if !hasContent {
-                // User cleared everything — delete the entry and its photo.
-                if let filename = existing.photoFilename {
+                // Delete all photos and the entry
+                for filename in existing.photoFilenames {
                     PhotoStorage.delete(filename)
                 }
                 modelContext.delete(existing)
@@ -366,43 +402,50 @@ struct JournalEntryView: View {
                 return
             }
 
-            // Photo handling: write a new file only if the image actually
-            // changed (we detect this by checking whether the current file
-            // can still load to the same instance — simpler heuristic: if
-            // there's an attached image but no filename, save it; if the
-            // user removed the image, delete the file).
-            if attachedImage == nil, let filename = existing.photoFilename {
-                PhotoStorage.delete(filename)
-                existing.photoFilename = nil
-            } else if let image = attachedImage, existing.photoFilename == nil {
-                if let filename = try? PhotoStorage.save(image) {
-                    existing.photoFilename = filename
-                }
-            } else if let image = attachedImage,
-                      let oldFilename = existing.photoFilename,
-                      PhotoStorage.load(oldFilename) !== image {
-                // User picked a different image — replace the file.
-                PhotoStorage.delete(oldFilename)
-                if let newFilename = try? PhotoStorage.save(image) {
-                    existing.photoFilename = newFilename
+            // Save any new (unsaved) images and collect all current filenames
+            var savedFilenames: [String] = []
+            for (i, image) in attachedImages.enumerated() {
+                if let existingFilename = i < attachedFilenames.count ? attachedFilenames[i] : nil {
+                    savedFilenames.append(existingFilename)
+                } else {
+                    if let filename = try? PhotoStorage.save(image) {
+                        savedFilenames.append(filename)
+                        if i < attachedFilenames.count {
+                            attachedFilenames[i] = filename
+                        }
+                    }
                 }
             }
 
+            // Delete any files that were removed
+            for oldFilename in existing.photoFilenames where !savedFilenames.contains(oldFilename) {
+                PhotoStorage.delete(oldFilename)
+            }
+
+            existing.photoFilenames = savedFilenames
+            existing.photoFilename = nil    // clear legacy field
             existing.body = trimmed
             existing.updatedAt = Date()
+
         } else if hasContent {
-            // Create new
-            var photoFilename: String?
-            if let image = attachedImage {
-                photoFilename = try? PhotoStorage.save(image)
+            // Save all photos for new entry
+            var savedFilenames: [String] = []
+            for (i, image) in attachedImages.enumerated() {
+                if let filename = try? PhotoStorage.save(image) {
+                    savedFilenames.append(filename)
+                    if i < attachedFilenames.count {
+                        attachedFilenames[i] = filename
+                    }
+                }
             }
             let teachingId = appState.scheduler.teaching(for: date).id
             let newEntry = JournalEntry(
                 date: date,
                 teachingId: teachingId,
                 body: trimmed,
-                photoFilename: photoFilename
+                photoFilename: nil
             )
+            newEntry.photoFilenames = savedFilenames
             modelContext.insert(newEntry)
             entry = newEntry
         }
@@ -410,7 +453,14 @@ struct JournalEntryView: View {
         try? modelContext.save()
     }
 
-    private func removePhoto() {
-        attachedImage = nil
+    private func removePhoto(at index: Int) {
+        guard index < attachedImages.count else { return }
+        attachedImages.remove(at: index)
+        if index < attachedFilenames.count {
+            attachedFilenames.remove(at: index)
+        }
+        // Adjust toast/jiggle indices
+        if let t = toastIndex, t == index { toastIndex = nil }
+        if let j = jigglingIndex, j == index { jigglingIndex = nil }
     }
 }

@@ -28,9 +28,13 @@ final class JournalEntry {
     /// The user's writing. May be empty if they only attached a photo.
     var body: String
 
-    /// Filename (not full path) of the attached photo, if any. Lives in
-    /// `Application Support/JournalPhotos/`.
+    /// Legacy single-photo filename — kept for migration only. New entries
+    /// use `photoFilenames` instead.
     var photoFilename: String?
+
+    /// Filenames (not full paths) of all attached photos. Replaces
+    /// `photoFilename` for entries created after multi-photo support.
+    var photoFilenames: [String] = []
 
     var createdAt: Date
     var updatedAt: Date
@@ -51,7 +55,9 @@ final class JournalEntry {
     /// Returns true if the entry has nothing the user actually wrote or
     /// attached. Used to decide whether to keep or delete on save.
     var isEmpty: Bool {
-        body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && photoFilename == nil
+        body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && photoFilename == nil
+            && photoFilenames.isEmpty
     }
 
     /// Stable date key formatter — POSIX locale + yyyy-MM-dd so it never
