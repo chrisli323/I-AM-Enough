@@ -25,6 +25,7 @@ struct SettingsView: View {
         NavigationStack {
             ZStack {
                 Theme.parchmentBackground
+                    .ignoresSafeArea()
 
                 ScrollViewReader { proxy in
                 ScrollView {
@@ -124,8 +125,7 @@ struct SettingsView: View {
                 }
                 } // ScrollViewReader
             }
-            .toolbarBackground(Theme.parchmentLight, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -183,6 +183,7 @@ struct SettingsView: View {
         NavigationStack {
             ZStack {
                 Theme.parchmentBackground
+                    .ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: 28) {
@@ -239,8 +240,7 @@ struct SettingsView: View {
                 .scrollIndicators(.hidden)
                 .padding(.top, 24)
             }
-            .toolbarBackground(Theme.parchmentLight, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

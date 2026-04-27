@@ -28,6 +28,7 @@ struct JournalListView: View {
         NavigationStack(path: $path) {
             ZStack {
                 Theme.parchmentBackground
+                    .ignoresSafeArea()
 
                 ScrollViewReader { _ in
                     ScrollView {
@@ -57,8 +58,7 @@ struct JournalListView: View {
                     .scrollIndicators(.hidden)
                 }
             }
-            .toolbarBackground(Theme.parchmentLight, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {

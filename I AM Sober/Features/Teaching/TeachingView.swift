@@ -198,6 +198,7 @@ struct TeachingPage: View {
         }
         .scrollIndicators(.hidden)
         .contentMargins(.bottom, 0, for: .scrollContent)
+        .background(Theme.parchmentBackground.ignoresSafeArea())
         .onAppear {
             checkFavorite(teachingId: teaching.id)
             // All pages start at 0.1 opacity (contentVisible = false).
