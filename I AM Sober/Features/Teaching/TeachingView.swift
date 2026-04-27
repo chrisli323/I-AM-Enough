@@ -398,20 +398,10 @@ struct TeachingPage: View {
             .padding(.vertical, 4)
 
             VStack(spacing: 14) {
-                HStack(spacing: 5) {
-                    Text("\u{201C}") // opening curly double-quote
-                        .font(.system(size: 24, design: .serif))
-                        .foregroundStyle(Theme.accentGold.opacity(0.75))
-                        .offset(y: -2)
-                    Text("TO CARRY WITH YOU")
-                        .font(Theme.smallCaps(10))
-                        .tracking(2.6)
-                        .foregroundStyle(Theme.inkFaded)
-                    Text("\u{201D}") // closing curly double-quote
-                        .font(.system(size: 24, design: .serif))
-                        .foregroundStyle(Theme.accentGold.opacity(0.75))
-                        .offset(y: -2)
-                }
+                Text("TO CARRY WITH YOU")
+                    .font(Theme.smallCaps(10))
+                    .tracking(2.6)
+                    .foregroundStyle(Theme.inkFaded)
 
                 Text(text)
                     .font(Theme.bodyItalic())
