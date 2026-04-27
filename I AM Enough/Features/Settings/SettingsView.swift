@@ -98,7 +98,7 @@ struct SettingsView: View {
 
                         // Footer
                         VStack(spacing: 6) {
-                            Text("I AM ENOUGH")
+                            Text("I AM Enough")
                                 .font(Theme.smallCaps(10))
                                 .tracking(3)
                                 .foregroundStyle(Theme.inkFaded)

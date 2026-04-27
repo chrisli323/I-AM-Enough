@@ -300,7 +300,7 @@ struct TeachingPage: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 4) {
-                Text("I AM ENOUGH")
+                Text("I AM Enough")
                     .font(Theme.smallCaps())
                     .tracking(2.4)
                     .foregroundStyle(Theme.inkFaded)

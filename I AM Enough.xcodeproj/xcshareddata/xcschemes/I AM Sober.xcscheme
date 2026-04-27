@@ -18,7 +18,7 @@
                BlueprintIdentifier = "C00389692F87AB9B0025816E"
                BuildableName = "I AM Sober.app"
                BlueprintName = "I AM Sober"
-               ReferencedContainer = "container:I AM Sober.xcodeproj">
+               ReferencedContainer = "container:I AM Enough.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -47,7 +47,7 @@
             BlueprintIdentifier = "C00389692F87AB9B0025816E"
             BuildableName = "I AM Sober.app"
             BlueprintName = "I AM Sober"
-            ReferencedContainer = "container:I AM Sober.xcodeproj">
+            ReferencedContainer = "container:I AM Enough.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -64,7 +64,7 @@
             BlueprintIdentifier = "C00389692F87AB9B0025816E"
             BuildableName = "I AM Sober.app"
             BlueprintName = "I AM Sober"
-            ReferencedContainer = "container:I AM Sober.xcodeproj">
+            ReferencedContainer = "container:I AM Enough.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

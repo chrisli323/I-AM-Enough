@@ -39,7 +39,7 @@ struct SplashView: View {
                     )
 
                 // Title
-                Text("I AM ENOUGH")
+                Text("I AM Enough")
                     .font(Theme.display(38))
                     .tracking(6)
                     .foregroundStyle(Theme.ink)
