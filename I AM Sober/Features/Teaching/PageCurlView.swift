@@ -28,6 +28,9 @@ struct PageCurlView: UIViewControllerRepresentable {
         pvc.dataSource = context.coordinator
         pvc.delegate   = context.coordinator
         pvc.isDoubleSided = false
+        // Slow the snap-to-completion animation after the user lifts their finger.
+        // 1.0 = system default; 0.6 = roughly 40 % slower curl snap.
+        pvc.view.layer.speed = 0.6
         // Match the parchment background so the page-curl shadow looks right.
         pvc.view.backgroundColor = UIColor { t in
             t.userInterfaceStyle == .dark

@@ -290,7 +290,7 @@ struct AchievementsView: View {
                         .tracking(0.8)
                         .foregroundStyle(Theme.inkFaded)
                 }
-                Text("A full year of sobriety. Platinum is the rarest badge — a testament to extraordinary strength, dedication, and self-belief.")
+                Text("A full year of clarity and growth. Platinum is the rarest badge — a testament to extraordinary strength, dedication, and self-belief.")
                     .font(Theme.bodyItalic(12))
                     .foregroundStyle(Theme.inkFaded)
                     .fixedSize(horizontal: false, vertical: true)

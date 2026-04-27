@@ -113,7 +113,7 @@ final class NotificationService {
         cancelAll()
 
         let content = UNMutableNotificationContent()
-        content.title = "I AM Sober"
+        content.title = "I AM Enough"
         content.body = Self.messages.randomElement() ?? Self.messages[0]
         content.sound = .default
 

@@ -98,7 +98,7 @@ struct SettingsView: View {
 
                         // Footer
                         VStack(spacing: 6) {
-                            Text("I AM SOBER")
+                            Text("I AM ENOUGH")
                                 .font(Theme.smallCaps(10))
                                 .tracking(3)
                                 .foregroundStyle(Theme.inkFaded)
@@ -173,7 +173,7 @@ struct SettingsView: View {
                 appState.preferences.clearSobrietyTracking()
             }
         } message: {
-            Text("This will reset your day counter and sobriety tracker back to Day 1, or you can turn off tracking entirely. Your journal entries and teachings will not be affected.")
+            Text("This will reset your day counter and progress tracker back to Day 1, or you can turn off tracking entirely. Your journal entries and teachings will not be affected.")
         }
     }
 

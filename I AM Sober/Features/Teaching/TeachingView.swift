@@ -300,7 +300,7 @@ struct TeachingPage: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 4) {
-                Text("I AM SOBER")
+                Text("I AM ENOUGH")
                     .font(Theme.smallCaps())
                     .tracking(2.4)
                     .foregroundStyle(Theme.inkFaded)
@@ -352,7 +352,7 @@ struct TeachingPage: View {
         — To Carry With You —
         "\(teaching.reflection)"
 
-        Shared from I AM Sober
+        Shared from I AM Enough
         """
     }
 

@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct I_AM_SoberApp: App {
+struct I_AM_EnoughApp: App {
     @State private var appState = AppState()
     @Environment(\.scenePhase) private var scenePhase
 
