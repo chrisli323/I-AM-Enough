@@ -39,19 +39,18 @@ struct TeachingView: View {
         ZStack {
             Theme.parchmentBackground
 
-            TabView(selection: $selectedIndex) {
-                ForEach(pageRange, id: \.self) { index in
-                    let daysFromToday = index - maxBackDays
-                    TeachingPage(
-                        date: dateForOffset(daysFromToday),
-                        isSelected: index == selectedIndex,
-                        initialAnimReady: initialAnimReady,
-                        snapToTodaySignal: snapToTodaySignal
-                    )
-                    .tag(index)
-                }
+            PageCurlView(
+                pageRange: pageRange,
+                selectedIndex: $selectedIndex
+            ) { index in
+                let daysFromToday = index - maxBackDays
+                return TeachingPage(
+                    date: dateForOffset(daysFromToday),
+                    isSelected: index == selectedIndex,
+                    initialAnimReady: initialAnimReady,
+                    snapToTodaySignal: snapToTodaySignal
+                )
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
 
             // Fixed audio toggle — anchored to the view, not the page content
             audioToggle
@@ -133,7 +132,7 @@ struct TeachingView: View {
 
 // MARK: - Single page
 
-private struct TeachingPage: View {
+struct TeachingPage: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
     let date: Date
@@ -207,14 +206,10 @@ private struct TeachingPage: View {
         // Fires when the user swipes to or away from this page.
         .onChange(of: isSelected) { _, nowSelected in
             if nowSelected {
-                // selectedIndex updates at the 50% swipe mark, not at full
-                // completion. Delay animateIn so the snap animation finishes
-                // first — this keeps the page at 20% opacity until it's fully
-                // within the frame, then brightens.
+                // UIPageViewController fires didFinishAnimating only after the
+                // curl completes — no need for a delay here.
                 if initialAnimReady {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                        animateIn(dayNumber: dayNumber)
-                    }
+                    animateIn(dayNumber: dayNumber)
                 }
             } else {
                 // Dims to 20% off-screen so the next swipe-to gets a fresh
