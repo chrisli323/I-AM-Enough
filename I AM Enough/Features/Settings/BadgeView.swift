@@ -84,6 +84,14 @@ struct BadgeView: View {
                 .font(Theme.smallCaps(8))
                 .tracking(0.6)
                 .foregroundStyle(Theme.inkFaded)
+
+            if !challenge.goalName.isEmpty {
+                Text(challenge.goalName.capitalized)
+                    .font(Theme.bodyItalic(9))
+                    .foregroundStyle(Theme.inkFaded.opacity(0.75))
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+            }
         }
         .frame(maxWidth: .infinity)
     }
@@ -198,6 +206,14 @@ struct BadgeView: View {
                 .font(Theme.smallCaps(8))
                 .tracking(0.6)
                 .foregroundStyle(Theme.inkFaded)
+
+            if !challenge.goalName.isEmpty {
+                Text(challenge.goalName.capitalized)
+                    .font(Theme.bodyItalic(9))
+                    .foregroundStyle(Theme.inkFaded.opacity(0.75))
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+            }
         }
         .frame(maxWidth: .infinity)
         .onAppear {

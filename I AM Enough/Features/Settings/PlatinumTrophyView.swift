@@ -144,6 +144,13 @@ struct PlatinumTrophyView: View {
                 .tracking(1.4)
                 .foregroundStyle(Theme.inkFaded)
 
+            if !challenge.goalName.isEmpty {
+                Text(challenge.goalName.capitalized)
+                    .font(Theme.bodyItalic(14))
+                    .foregroundStyle(primary.opacity(0.75))
+                    .multilineTextAlignment(.center)
+            }
+
             Text(challenge.completedAt, format: .dateTime.month(.wide).day().year())
                 .font(Theme.bodyItalic(13))
                 .foregroundStyle(Theme.inkFaded.opacity(0.7))

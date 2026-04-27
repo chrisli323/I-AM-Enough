@@ -70,9 +70,11 @@ final class CompletedChallenge {
 
     var days: Int
     var completedAt: Date
+    var goalName: String
 
-    init(days: Int, completedAt: Date = Date()) {
+    init(days: Int, goalName: String = "", completedAt: Date = Date()) {
         self.days = days
+        self.goalName = goalName.trimmingCharacters(in: .whitespacesAndNewlines)
         self.completedAt = completedAt
     }
 

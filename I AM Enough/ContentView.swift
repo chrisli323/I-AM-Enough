@@ -92,7 +92,7 @@ struct ContentView: View {
             CongratulatoryView(challengeDays: appState.preferences.intentionDurationDays,
                                challengeName: appState.preferences.intentionName) {
                 let days = appState.preferences.intentionDurationDays
-                let challenge = CompletedChallenge(days: days)
+                let challenge = CompletedChallenge(days: days, goalName: appState.preferences.intentionName)
                 modelContext.insert(challenge)
                 try? modelContext.save()
                 appState.router.showCongratulations = false
