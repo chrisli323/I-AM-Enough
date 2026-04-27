@@ -261,7 +261,7 @@ struct TeachingPage: View {
             .padding(.vertical, 4)
 
             VStack(spacing: 14) {
-                Text("MY DAILY AFFIRMATION")
+                Text("DAILY AFFIRMATION")
                     .font(Theme.smallCaps(10))
                     .tracking(2.6)
                     .foregroundStyle(Theme.inkFaded)
