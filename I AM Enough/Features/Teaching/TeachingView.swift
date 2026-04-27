@@ -56,6 +56,9 @@ struct TeachingView: View {
 
             // Fixed audio toggle — anchored to the view, not the page content
             audioToggle
+
+            // Return-to-today button — fades in only when on a past page
+            returnToTodayButton
         }
         // Soft tap each time the user crosses to another day. Uses the
         // modern SwiftUI sensoryFeedback API (iOS 17+) so it respects the
@@ -81,6 +84,44 @@ struct TeachingView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
                 snapToTodaySignal.toggle()
             }
+        }
+    }
+
+    // MARK: - Return to Today Button
+
+    private var returnToTodayButton: some View {
+        let isOnToday = selectedIndex == maxBackDays
+        return VStack {
+            Spacer()
+            Button {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    selectedIndex = maxBackDays
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                    snapToTodaySignal.toggle()
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "house")
+                        .font(.system(size: 12, weight: .medium))
+                    Text("Today")
+                        .font(Theme.smallCaps(11))
+                        .tracking(1.4)
+                }
+                .foregroundStyle(Theme.inkSecondary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(.thinMaterial.opacity(0.55), in: Capsule())
+                .overlay(
+                    Capsule()
+                        .strokeBorder(Theme.accentGold.opacity(0.30), lineWidth: 0.5)
+                )
+            }
+            .buttonStyle(.plain)
+            .opacity(isOnToday ? 0 : 1)
+            .animation(.easeInOut(duration: 0.3), value: isOnToday)
+            .allowsHitTesting(!isOnToday)
+            .padding(.bottom, 104)
         }
     }
 
