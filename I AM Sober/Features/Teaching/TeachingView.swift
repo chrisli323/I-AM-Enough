@@ -175,11 +175,6 @@ struct TeachingPage: View {
 
                 DropCapBody(text: teaching.body)
 
-                // Bottom gold hairline
-                Rectangle()
-                    .fill(Theme.accentGold.opacity(0.28))
-                    .frame(height: 0.4)
-
                 reflectionBlock(teaching.reflection)
 
                 HStack {
