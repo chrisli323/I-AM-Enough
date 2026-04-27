@@ -245,26 +245,38 @@ struct TeachingPage: View {
 
     @ViewBuilder
     private func affirmationBlock(_ text: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            // Label with a thin gold rule beneath — matches the page's hairline aesthetic
-            VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .center, spacing: 16) {
+            // Same ornamental fleuron divider as the reflection block
+            HStack(spacing: 14) {
+                Rectangle()
+                    .fill(Theme.accentGold.opacity(0.55))
+                    .frame(height: 0.6)
+                Text("\u{2766}") // ❦ FLORAL HEART
+                    .font(.system(size: 14, design: .serif))
+                    .foregroundStyle(Theme.accentGold)
+                Rectangle()
+                    .fill(Theme.accentGold.opacity(0.55))
+                    .frame(height: 0.6)
+            }
+            .padding(.vertical, 4)
+
+            VStack(spacing: 14) {
                 Text("MY DAILY AFFIRMATION")
                     .font(Theme.smallCaps(10))
-                    .tracking(2.4)
+                    .tracking(2.6)
                     .foregroundStyle(Theme.inkFaded)
-                Rectangle()
-                    .fill(Theme.accentGold.opacity(0.45))
-                    .frame(height: 0.5)
+
+                Text(text)
+                    .font(Theme.bodyItalic())
+                    .lineSpacing(Theme.reflectionLineSpacing)
+                    .foregroundStyle(Theme.inkSecondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 4)
             }
-            // "Today I AM…" — italic, warm secondary ink
-            Text(text)
-                .font(Theme.bodyItalic(16))
-                .foregroundStyle(Theme.inkSecondary)
-                .lineSpacing(5)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 2)
         }
-        .padding(.vertical, 4)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 0)
     }
 
     @ViewBuilder
