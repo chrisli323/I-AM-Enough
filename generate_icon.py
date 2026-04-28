@@ -7,20 +7,13 @@ cx, cy = SIZE // 2, SIZE // 2
 img = Image.new('RGB', (SIZE, SIZE))
 draw = ImageDraw.Draw(img)
 
-# 1. Parchment gradient background
-parchment_top = (247, 239, 217)   # #F7EFD9
-parchment_bot = (237, 222, 188)   # #EDDEBC
-for y in range(SIZE):
-    t = y / (SIZE - 1)
-    r = int(parchment_top[0] + t * (parchment_bot[0] - parchment_top[0]))
-    g = int(parchment_top[1] + t * (parchment_bot[1] - parchment_top[1]))
-    b = int(parchment_top[2] + t * (parchment_bot[2] - parchment_top[2]))
-    draw.line([(0, y), (SIZE - 1, y)], fill=(r, g, b))
+# 1. White background
+draw.rectangle([(0, 0), (SIZE, SIZE)], fill=(255, 255, 255))
 
 # 2. Sun rays — 16 triangular spikes radiating outward
 sun_yellow = (255, 210, 0)
-ray_body_r = 245   # where rays originate (just outside sun body)
-ray_tip_r  = 430   # how far rays extend
+ray_body_r = 295   # where rays originate (just outside sun body)
+ray_tip_r  = 490   # how far rays extend
 num_rays = 16
 half_gap = math.pi / num_rays * 0.52  # angular half-width of each ray
 
@@ -42,7 +35,7 @@ img = Image.alpha_composite(img.convert('RGBA'), ray_layer).convert('RGB')
 draw = ImageDraw.Draw(img)
 
 # 3. Sun body
-sun_r = 240
+sun_r = 290
 glow_color = (255, 190, 0)
 for offset in range(18, 0, -1):
     alpha = int(80 * (1 - offset / 18))
@@ -52,17 +45,18 @@ for offset in range(18, 0, -1):
 draw.ellipse([(cx - sun_r, cy - sun_r), (cx + sun_r, cy + sun_r)],
              fill=sun_yellow)
 
-# 4. "I AM" text centered over the sun
-font = ImageFont.truetype('/System/Library/Fonts/Supplemental/Georgia Bold.ttf', 265)
-text = "I AM"
+# 4. "I AM" + "Enough" stacked, centered within the sun
+font_top = ImageFont.truetype('/System/Library/Fonts/Supplemental/Georgia Bold.ttf', 265)
+font_bot = ImageFont.truetype('/System/Library/Fonts/Supplemental/Zapfino.ttf', 148)
 ink = (59, 38, 17)  # #3B2611
 
-bbox = draw.textbbox((0, 0), text, font=font)
-tw = bbox[2] - bbox[0]
-th = bbox[3] - bbox[1]
-tx = cx - tw // 2 - bbox[0]
-ty = cy - th // 2 - bbox[1]
-draw.text((tx, ty), text, font=font, fill=ink)
+# Use anchor='mm' (horizontal + vertical center of text) for reliable placement
+# "I AM" centered slightly above sun center; "Enough" below
+draw.text((cx, cy - 80), "I AM", font=font_top, fill=ink, anchor='mm')
+
+# Zapfino has no bold — simulate by drawing twice with 1px offset
+for dx, dy in [(-2,0),(2,0),(0,-2),(0,2),(-1,-1),(1,-1),(-1,1),(1,1),(0,0)]:
+    draw.text((cx + dx, cy + 190 + dy), "Enough", font=font_bot, fill=ink, anchor='mm')
 
 # 5. Warm vignette at edges — each edge composited independently so corners accumulate
 shadow = (191, 158, 96)  # #BF9E60
