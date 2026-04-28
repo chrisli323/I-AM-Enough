@@ -16,22 +16,17 @@ struct SplashView: View {
             Theme.parchmentBackground
 
             ZStack {
-                // App logo clipped to circle, sits inside the ring
-                Image("AppLogo")
-                    .resizable()
-                    .scaledToFill()
+                SplashLogoView()
                     .frame(width: 282, height: 282)
-                    .clipShape(Circle())
 
-                // Serpent ring on top of the logo edge
                 SerpentRingView()
                     .frame(width: 300, height: 300)
             }
             .scaleEffect(breathing ? 1.09 : 0.91)
             .opacity(breathing ? 1.0 : 0.60)
             .shadow(
-                color: Theme.accentGold.opacity(breathing ? 0.45 : 0.0),
-                radius: breathing ? 20 : 0
+                color: Color.orange.opacity(breathing ? 0.35 : 0.0),
+                radius: breathing ? 22 : 0
             )
             .animation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true), value: breathing)
         }
@@ -40,39 +35,97 @@ struct SplashView: View {
             withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) {
                 breathing = true
             }
-
             try? await Task.sleep(for: .seconds(2.5))
-
-            withAnimation(.easeIn(duration: 0.5)) {
-                finished = true
-            }
-
+            withAnimation(.easeIn(duration: 0.5)) { finished = true }
             try? await Task.sleep(for: .seconds(0.5))
             onFinished()
         }
     }
 }
 
-// MARK: - Serpent ring
+// MARK: - Native SwiftUI logo (no background — parchment shows through)
+
+private struct SplashLogoView: View {
+    private let ink = Color(red: 0.231, green: 0.149, blue: 0.067)
+    private let sunYellow = Color(red: 1.0, green: 0.824, blue: 0.0)
+
+    var body: some View {
+        GeometryReader { geo in
+            let s = min(geo.size.width, geo.size.height)
+
+            ZStack {
+                // Sun rays + body drawn on a transparent canvas
+                Canvas { ctx, sz in
+                    let cx = sz.width / 2
+                    let cy = sz.height / 2
+                    let sunR    = s * 0.283
+                    let bodyR   = s * 0.288   // rays start just outside sun
+                    let tipR    = s * 0.479
+                    let numRays = 16
+                    let halfGap = Double.pi / Double(numRays) * 0.52
+                    let yellow  = Color(red: 1.0, green: 0.824, blue: 0.0)
+
+                    // Rays
+                    for i in 0..<numRays {
+                        let a    = Double(i) * (2 * .pi / Double(numRays)) - .pi / 2
+                        let tipX = cx + tipR  * cos(a);    let tipY = cy + tipR  * sin(a)
+                        let blX  = cx + bodyR * cos(a - halfGap); let blY = cy + bodyR * sin(a - halfGap)
+                        let brX  = cx + bodyR * cos(a + halfGap); let brY = cy + bodyR * sin(a + halfGap)
+                        var p = Path()
+                        p.move(to: CGPoint(x: tipX, y: tipY))
+                        p.addLine(to: CGPoint(x: blX, y: blY))
+                        p.addLine(to: CGPoint(x: brX, y: brY))
+                        p.closeSubpath()
+                        ctx.fill(p, with: .color(yellow))
+                    }
+
+                    // Sun body
+                    ctx.fill(
+                        Path(ellipseIn: CGRect(x: cx - sunR, y: cy - sunR, width: sunR * 2, height: sunR * 2)),
+                        with: .color(yellow)
+                    )
+                }
+
+                // "I AM" — slightly above center
+                Text("I AM")
+                    .font(.custom("Georgia-Bold", size: s * 0.259))
+                    .foregroundColor(ink)
+                    .offset(y: -s * 0.078)
+
+                // "Enough" — simulate bold via dual render, below center
+                ZStack {
+                    Text("Enough").font(.custom("Zapfino", size: s * 0.145)).foregroundColor(ink).offset(x: 1)
+                    Text("Enough").font(.custom("Zapfino", size: s * 0.145)).foregroundColor(ink)
+                }
+                .offset(y: s * 0.185)
+            }
+            .frame(width: s, height: s)
+            .position(x: geo.size.width / 2, y: geo.size.height / 2)
+        }
+    }
+}
+
+// MARK: - Serpent ring — yellow with orange glow outline
 
 private struct SerpentRingView: View {
     @State private var rotation: Double = 0
 
     var body: some View {
         Circle()
-            .trim(from: 0, to: 0.78)
+            .trim(from: 0, to: 0.82)
             .stroke(
                 AngularGradient(
                     stops: [
-                        .init(color: .clear,                          location: 0.00),
-                        .init(color: Theme.accentGold.opacity(0.15), location: 0.25),
-                        .init(color: Theme.accentGold.opacity(0.48), location: 0.78),
-                        .init(color: Theme.accentGold.opacity(0.48), location: 1.00),
+                        .init(color: .clear,                                        location: 0.00),
+                        .init(color: Color.yellow.opacity(0.35),                    location: 0.20),
+                        .init(color: Color(red: 1.0, green: 0.85, blue: 0.0),       location: 0.82),
+                        .init(color: Color(red: 1.0, green: 0.85, blue: 0.0),       location: 1.00),
                     ],
                     center: .center
                 ),
-                style: StrokeStyle(lineWidth: 5, lineCap: .round)
+                style: StrokeStyle(lineWidth: 13, lineCap: .round)
             )
+            .shadow(color: Color.orange.opacity(0.75), radius: 4, x: 0, y: 0)
             .rotationEffect(.degrees(rotation - 90))
             .onAppear {
                 withAnimation(.linear(duration: 2.2).repeatForever(autoreverses: false)) {
