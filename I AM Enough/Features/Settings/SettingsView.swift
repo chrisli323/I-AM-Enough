@@ -11,6 +11,9 @@ import SwiftData
 
 struct SettingsView: View {
     @Environment(AppState.self) private var appState
+    @Environment(\.openURL) private var openURL
+
+    private let privacyPolicyURL = URL(string: "https://chrisli323.github.io/I-AM-Enough/privacy.html")!
     @Query(sort: \CompletedChallenge.completedAt, order: .reverse) private var completedChallenges: [CompletedChallenge]
 
     @State private var showingSobrietySetup = false
@@ -90,11 +93,22 @@ struct SettingsView: View {
                                 value: "\(appState.teachingStore.count) available"
                             )
                             divider
-                            aboutRow(
-                                icon: "lock.shield",
-                                title: "Privacy",
-                                value: "All data stays on device"
-                            )
+                            Button {
+                                openURL(privacyPolicyURL)
+                            } label: {
+                                HStack(spacing: 14) {
+                                    settingsIcon("lock.shield", color: Theme.inkFaded)
+                                    Text("Privacy Policy")
+                                        .font(Theme.body(16))
+                                        .foregroundStyle(Theme.ink)
+                                    Spacer()
+                                    Image(systemName: "arrow.up.right")
+                                        .font(.caption)
+                                        .foregroundStyle(Theme.inkFaded.opacity(0.6))
+                                }
+                                .padding(.vertical, 4)
+                            }
+                            .buttonStyle(.plain)
                         }
 
                         // Footer
@@ -106,6 +120,11 @@ struct SettingsView: View {
                             Text("one day at a time")
                                 .font(Theme.bodyItalic(12))
                                 .foregroundStyle(Theme.inkFaded.opacity(0.6))
+                            Text("© 2026 Chris Lee. All rights reserved.")
+                                .font(Theme.smallCaps(9))
+                                .tracking(1)
+                                .foregroundStyle(Theme.inkFaded.opacity(0.45))
+                                .padding(.top, 4)
                         }
                         .padding(.top, 8)
                         .padding(.bottom, 32)
