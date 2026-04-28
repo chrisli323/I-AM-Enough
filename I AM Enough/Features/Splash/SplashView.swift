@@ -86,18 +86,20 @@ private struct SplashLogoView: View {
                     )
                 }
 
-                // "I AM" — slightly above center
+                // "I AM" — above center
                 Text("I AM")
-                    .font(.custom("Georgia-Bold", size: s * 0.259))
+                    .font(.custom("Georgia-Bold", size: s * 0.21))
                     .foregroundColor(ink)
-                    .offset(y: -s * 0.078)
+                    .fixedSize()
+                    .offset(y: -s * 0.10)
 
-                // "Enough" — simulate bold via dual render, below center
+                // "Enough" — fixedSize collapses Zapfino's oversized frame
                 ZStack {
-                    Text("Enough").font(.custom("Zapfino", size: s * 0.145)).foregroundColor(ink).offset(x: 1)
-                    Text("Enough").font(.custom("Zapfino", size: s * 0.145)).foregroundColor(ink)
+                    Text("Enough").font(.custom("Zapfino", size: s * 0.105)).foregroundColor(ink).offset(x: 1)
+                    Text("Enough").font(.custom("Zapfino", size: s * 0.105)).foregroundColor(ink)
                 }
-                .offset(y: s * 0.185)
+                .fixedSize()
+                .offset(y: s * 0.24)
             }
             .frame(width: s, height: s)
             .position(x: geo.size.width / 2, y: geo.size.height / 2)
