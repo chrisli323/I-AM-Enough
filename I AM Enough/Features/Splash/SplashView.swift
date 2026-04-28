@@ -17,7 +17,7 @@ struct SplashView: View {
 
             ZStack {
                 SplashLogoView()
-                    .frame(width: 282, height: 282)
+                    .frame(width: 240, height: 240)
 
                 SerpentRingView()
                     .frame(width: 300, height: 300)
