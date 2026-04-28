@@ -91,7 +91,7 @@ private struct SplashLogoView: View {
                     .font(.custom("Georgia-Bold", size: s * 0.21))
                     .foregroundColor(ink)
                     .fixedSize()
-                    .offset(y: -s * 0.10)
+                    .offset(y: -s * 0.07)
 
                 // "Enough" — fixedSize collapses Zapfino's oversized frame
                 ZStack {
@@ -99,7 +99,7 @@ private struct SplashLogoView: View {
                     Text("Enough").font(.custom("Zapfino", size: s * 0.105)).foregroundColor(ink)
                 }
                 .fixedSize()
-                .offset(y: s * 0.24)
+                .offset(y: s * 0.17)
             }
             .frame(width: s, height: s)
             .position(x: geo.size.width / 2, y: geo.size.height / 2)
