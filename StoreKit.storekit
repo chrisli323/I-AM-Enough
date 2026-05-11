@@ -1,0 +1,24 @@
+{
+  "identifier" : "StoreKitConfig",
+  "nonConsumableProducts" : [
+    {
+      "displayPrice" : "4.99",
+      "familySharable" : false,
+      "internalID" : "iamenough_unlock_001",
+      "localizations" : [
+        {
+          "description" : "Unlock all 365 daily teachings and continue your journey for a full year.",
+          "displayName" : "Unlock I AM Enough",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.chrislee.iamenough.unlock",
+      "referenceName" : "Unlock I AM Enough",
+      "type" : "NonConsumable"
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

@@ -8,6 +8,7 @@
 
 import SwiftUI
 import SwiftData
+import StoreKit
 
 struct SettingsView: View {
     @Environment(AppState.self) private var appState
@@ -24,6 +25,9 @@ struct SettingsView: View {
     @State private var selectedChallengeDays: Int? = nil
     @State private var intentionNameText: String = ""
     @State private var showingCancelIntentionConfirm = false
+    @State private var isRestoringPurchases = false
+    @State private var restoreMessage: String?
+    @State private var showingRestoreAlert = false
 
     var body: some View {
         NavigationStack {
@@ -54,6 +58,11 @@ struct SettingsView: View {
                         // MARK: - My Achievements
                         settingsSection(title: "MY ACHIEVEMENTS") {
                             achievementsSection
+                        }
+
+                        // MARK: - App Access
+                        settingsSection(title: "APP ACCESS") {
+                            appAccessSection
                         }
 
                         // MARK: - Audio
@@ -199,6 +208,115 @@ struct SettingsView: View {
         }
     }
 
+    // MARK: - App Access Section
+
+    @ViewBuilder
+    private var appAccessSection: some View {
+        if appState.purchaseManager.isUnlocked {
+            // ── Unlocked state ────────────────────────────────────────────
+            HStack(spacing: 14) {
+                settingsIcon("checkmark.seal.fill", color: .green.opacity(0.7))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Full Access Unlocked")
+                        .font(Theme.body(16))
+                        .foregroundStyle(Theme.ink)
+                    Text("All 365 teachings · Thank you ✦")
+                        .font(Theme.bodyItalic(13))
+                        .foregroundStyle(Theme.inkFaded)
+                }
+                Spacer()
+            }
+            .padding(.vertical, 4)
+
+        } else if appState.preferences.isTrialActive {
+            // ── Trial active ──────────────────────────────────────────────
+            HStack(spacing: 14) {
+                settingsIcon("gift", color: Theme.accentGold)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Free Trial")
+                        .font(Theme.body(16))
+                        .foregroundStyle(Theme.ink)
+                    let days = appState.preferences.trialDaysRemaining
+                    Text(days == 1 ? "1 day remaining" : "\(days) days remaining")
+                        .font(Theme.bodyItalic(13))
+                        .foregroundStyle(Theme.inkFaded)
+                }
+                Spacer()
+            }
+            .padding(.vertical, 4)
+            divider
+            restorePurchasesRow
+
+        } else {
+            // ── Trial ended, not unlocked ─────────────────────────────────
+            let price = appState.purchaseManager.product?.displayPrice ?? "$4.99"
+            Button {
+                Task {
+                    do {
+                        try await appState.purchaseManager.purchase()
+                    } catch { }
+                }
+            } label: {
+                HStack(spacing: 14) {
+                    settingsIcon("lock.open", color: Theme.accentGold)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Unlock I AM Enough")
+                            .font(Theme.body(16))
+                            .foregroundStyle(Theme.ink)
+                        Text("\(price) · One-time · All 365 teachings")
+                            .font(Theme.bodyItalic(13))
+                            .foregroundStyle(Theme.inkFaded)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(Theme.inkFaded.opacity(0.6))
+                }
+                .padding(.vertical, 4)
+            }
+            .buttonStyle(.plain)
+            divider
+            restorePurchasesRow
+        }
+    }
+
+    private var restorePurchasesRow: some View {
+        Button {
+            Task {
+                isRestoringPurchases = true
+                await appState.purchaseManager.restorePurchases()
+                isRestoringPurchases = false
+                if appState.purchaseManager.isUnlocked {
+                    restoreMessage = "Purchase restored successfully."
+                } else {
+                    restoreMessage = "No previous purchase found for this Apple ID."
+                }
+                showingRestoreAlert = true
+            }
+        } label: {
+            HStack(spacing: 14) {
+                if isRestoringPurchases {
+                    ProgressView()
+                        .frame(width: 28, height: 28)
+                } else {
+                    settingsIcon("arrow.clockwise", color: Theme.inkFaded)
+                }
+                Text("Restore Purchases")
+                    .font(Theme.body(16))
+                    .foregroundStyle(Theme.ink)
+                Spacer()
+            }
+            .padding(.vertical, 4)
+        }
+        .buttonStyle(.plain)
+        .disabled(isRestoringPurchases)
+        .alert("Restore Purchases", isPresented: $showingRestoreAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(restoreMessage ?? "")
+        }
+    }
+
     // MARK: - Sobriety Setup Sheet
 
     private var sobrietySetupSheet: some View {
@@ -321,7 +439,7 @@ struct SettingsView: View {
             )
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(isTracking ? "Sober" : "Your Journey")
+                Text("Your Journey")
                     .font(Theme.body(16))
                     .foregroundStyle(Theme.ink)
                 Text("Day \(dayNumber)")

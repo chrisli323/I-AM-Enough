@@ -10,10 +10,14 @@
 import SwiftUI
 
 struct WelcomeView: View {
+    @Environment(AppState.self) private var appState
+
     /// Pass `true` when opened from Settings so the button reads "Close"
     /// instead of "Begin My Journey."
     var isRevisit: Bool = false
     var onBegin: () -> Void
+
+    @State private var showingPaywallSheet = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -111,6 +115,13 @@ struct WelcomeView: View {
                     }
                     .padding(.bottom, 36)
 
+                    // Trial / unlock note — hidden forever after purchase
+                    if !appState.purchaseManager.isUnlocked {
+                        trialNote
+                            .padding(.top, 12)
+                            .padding(.bottom, 8)
+                    }
+
                     // Bottom fleuron
                     Text("\u{2767}")
                         .font(.system(size: 18, design: .serif))
@@ -161,6 +172,71 @@ struct WelcomeView: View {
             }
         }
         .ignoresSafeArea(edges: .bottom)
+    }
+
+    // MARK: - Trial Note
+
+    @ViewBuilder
+    private var trialNote: some View {
+        let unlocked  = appState.purchaseManager.isUnlocked
+        let active    = appState.preferences.isTrialActive
+        let remaining = appState.preferences.trialDaysRemaining
+
+        if !unlocked {
+            VStack(spacing: 10) {
+                HStack(spacing: 14) {
+                    Rectangle().fill(Theme.accentGold.opacity(0.25)).frame(height: 0.5)
+                    Image(systemName: "sun.max")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Theme.accentGold.opacity(0.6))
+                    Rectangle().fill(Theme.accentGold.opacity(0.25)).frame(height: 0.5)
+                }
+
+                if !isRevisit {
+                    // First open — explain the model simply
+                    Text("Your first 7 teachings are free. Unlock all 365 for $4.99 — one time, no subscription.")
+                        .font(Theme.bodyItalic(13))
+                        .foregroundStyle(Theme.inkFaded.opacity(0.65))
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else if active {
+                    // Revisiting during trial
+                    let countText = remaining == 1 ? "1 free teaching remaining." : "\(remaining) free teachings remaining."
+                    Text("\(countText) Unlock all 365 for $4.99 — one time, no subscription.")
+                        .font(Theme.bodyItalic(13))
+                        .foregroundStyle(Theme.inkFaded.opacity(0.65))
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    // Revisiting after trial ended
+                    Text("Your free trial has ended. Unlock all 365 teachings for $4.99 — one time, no subscription.")
+                        .font(Theme.bodyItalic(13))
+                        .foregroundStyle(Theme.inkFaded.opacity(0.65))
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                // Unlock link — always shown alongside the trial note.
+                if true {
+                    Button { showingPaywallSheet = true } label: {
+                        Text("Unlock forever →")
+                            .font(Theme.bodyItalic(13))
+                            .foregroundStyle(Theme.accentGold.opacity(0.85))
+                            .underline()
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 2)
+                    .sheet(isPresented: $showingPaywallSheet) {
+                        PaywallView(isEarlyUpgrade: true, onDismiss: { showingPaywallSheet = false })
+                            .environment(appState)
+                            .presentationDetents([.large])
+                            .presentationCornerRadius(28)
+                            .presentationDragIndicator(.hidden)
+                    }
+                }
+            }
+            .padding(.horizontal, 8)
+        }
     }
 
     // MARK: - Subviews

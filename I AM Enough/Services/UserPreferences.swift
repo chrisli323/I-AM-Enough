@@ -212,6 +212,22 @@ final class UserPreferences {
         }
     }
 
+    // MARK: - Trial Status
+
+    /// Full days elapsed since the very first launch (0 = install day, 6 = Day 7).
+    var daysSinceInstall: Int {
+        let cal   = Calendar.current
+        let start = cal.startOfDay(for: firstOpenDate)
+        let today = cal.startOfDay(for: Date())
+        return cal.dateComponents([.day], from: start, to: today).day ?? 0
+    }
+
+    /// True while the user is within the 7-day free trial (personal Days 1–7).
+    var isTrialActive: Bool { daysSinceInstall < 7 }
+
+    /// How many free trial days remain (0 once the trial has ended).
+    var trialDaysRemaining: Int { max(0, 7 - daysSinceInstall) }
+
     // MARK: - Intention / Challenge
 
     /// The date the user started their current intention challenge. Nil if none set.

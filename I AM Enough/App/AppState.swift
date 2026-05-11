@@ -17,15 +17,17 @@ final class AppState {
     let router: Router
     let audioService: AudioService
     let notificationService: NotificationService
+    let purchaseManager: PurchaseManager
 
     init() {
         let preferences = UserPreferences()
         let store = TeachingStore()
-        self.preferences = preferences
-        self.teachingStore = store
-        self.scheduler = TeachingScheduler(store: store, preferences: preferences)
-        self.router = Router()
-        self.audioService = AudioService(preferences: preferences)
+        self.preferences        = preferences
+        self.teachingStore      = store
+        self.scheduler          = TeachingScheduler(store: store, preferences: preferences)
+        self.router             = Router()
+        self.audioService       = AudioService(preferences: preferences)
         self.notificationService = NotificationService(preferences: preferences)
+        self.purchaseManager    = PurchaseManager()
     }
 }

@@ -17,6 +17,7 @@ import Combine
 
 struct TeachingView: View {
     @Environment(AppState.self) private var appState
+    @Environment(\.scenePhase) private var scenePhase
 
     /// Selected page index. Pages are ordered oldest → today, so the
     /// highest index is always today. Initialised in `.onAppear` once
@@ -29,6 +30,10 @@ struct TeachingView: View {
     /// call animateIn even though onChange(of: isSelected) may not fire
     /// reliably for programmatic selectedIndex changes.
     @State private var snapToTodaySignal = false
+    /// True after the user dismisses the paywall without purchasing.
+    /// Reset to false every time the app becomes active so the paywall
+    /// re-appears on each launch until the user unlocks.
+    @State private var paywallDismissed = false
 
     var body: some View {
         // TODO: 🔒 FINAL BUILD — Remove previewDays and lock pageRange
@@ -56,6 +61,31 @@ struct TeachingView: View {
 
             // Top controls row — audio toggle + return-to-today (past pages only)
             topControlsRow
+
+            // Paywall — covers today (and future preview pages) once the
+            // 7-day trial ends and the user has not yet purchased the unlock.
+            // Dismissed users can swipe right to revisit their first 7 days.
+            // Re-appears on every app launch until the unlock is purchased.
+            if !appState.purchaseManager.isUnlocked
+                && !appState.preferences.isTrialActive
+                && !paywallDismissed
+                && selectedIndex >= maxBackDays {
+                PaywallView(onDismiss: {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        paywallDismissed = true
+                    }
+                })
+                .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.25),
+                   value: appState.purchaseManager.isUnlocked)
+        .animation(.easeInOut(duration: 0.25), value: paywallDismissed)
+        // Re-show paywall each time the user brings the app to the foreground.
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                paywallDismissed = false
+            }
         }
         // Soft tap each time the user crosses to another day. Uses the
         // modern SwiftUI sensoryFeedback API (iOS 17+) so it respects the
@@ -182,6 +212,8 @@ struct TeachingPage: View {
     /// Animates from 0 → real day number each time this page becomes active,
     /// giving the digit-roll effect via .contentTransition(.numericText()).
     @State private var displayDayNumber: Int = 0
+    /// Shows the paywall as a sheet when the user taps "Unlock" in the trial banner.
+    @State private var showingPaywallSheet = false
 
     var body: some View {
         let teaching = appState.scheduler.teaching(for: date)
@@ -214,6 +246,12 @@ struct TeachingPage: View {
                     favoriteButton(teachingId: teaching.id)
                     shareButton(teaching: teaching)
                 }
+
+                // Trial reminder — quietly visible until the unlock is purchased.
+                // Disappears forever once isUnlocked is true.
+                if !appState.purchaseManager.isUnlocked {
+                    trialReminderBanner
+}
 
                 Spacer(minLength: 120)
             }
@@ -258,6 +296,56 @@ struct TeachingPage: View {
         // page responds; all others ignore it.
         .onChange(of: snapToTodaySignal) { _, _ in
             if Calendar.current.isDateInToday(date) { animateIn(dayNumber: dayNumber) }
+        }
+        // Fired whenever the user changes their Day 1 start date in Settings.
+        // Re-animates the day number immediately on the currently visible page
+        // so it never shows stale data after a date change.
+        .onChange(of: appState.preferences.personalDayOneDate) { _, _ in
+            guard isSelected, initialAnimReady else { return }
+            animateIn(dayNumber: appState.scheduler.personalDayNumber(for: date))
+        }
+    }
+
+    // MARK: - Trial Reminder Banner
+
+    @ViewBuilder
+    private var trialReminderBanner: some View {
+        let remaining = appState.preferences.trialDaysRemaining
+        let isActive  = appState.preferences.isTrialActive
+
+        HStack(spacing: 0) {
+            // Status text
+            Group {
+                if isActive {
+                    Text(remaining == 1
+                         ? "1 free teaching remaining · "
+                         : "\(remaining) free teachings remaining · ")
+                } else {
+                    Text("Your free trial has ended · ")
+                }
+            }
+            .font(Theme.bodyItalic(12))
+            .foregroundStyle(Theme.inkFaded.opacity(0.6))
+
+            // Tappable unlock link
+            Button {
+                showingPaywallSheet = true
+            } label: {
+                Text("Unlock forever →")
+                    .font(Theme.bodyItalic(12))
+                    .foregroundStyle(Theme.accentGold.opacity(0.85))
+            }
+            .buttonStyle(.plain)
+        }
+        .multilineTextAlignment(.center)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 8)
+        .sheet(isPresented: $showingPaywallSheet) {
+            PaywallView(isEarlyUpgrade: true, onDismiss: { showingPaywallSheet = false })
+                .environment(appState)
+                .presentationDetents([.large])
+                .presentationCornerRadius(28)
+                .presentationDragIndicator(.hidden)
         }
     }
 
