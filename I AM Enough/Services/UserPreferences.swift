@@ -212,6 +212,20 @@ final class UserPreferences {
         }
     }
 
+    /// True once the user has explicitly tapped "I Agree & Continue" on the
+    /// disclaimer screen. Resets if the app is deleted and reinstalled.
+    var hasAcceptedDisclaimer: Bool {
+        get {
+            access(keyPath: \.hasAcceptedDisclaimer)
+            return defaults.bool(forKey: Keys.hasAcceptedDisclaimer)
+        }
+        set {
+            withMutation(keyPath: \.hasAcceptedDisclaimer) {
+                defaults.set(newValue, forKey: Keys.hasAcceptedDisclaimer)
+            }
+        }
+    }
+
     // MARK: - Trial Status
 
     /// Full days elapsed since the very first launch (0 = install day, 6 = Day 7).
@@ -336,6 +350,7 @@ final class UserPreferences {
         static let notificationMinute = "notificationMinute"
         static let hasSeenNotificationPrompt = "hasSeenNotificationPrompt"
         static let hasSeenWelcome = "hasSeenWelcome"
+        static let hasAcceptedDisclaimer = "hasAcceptedDisclaimer"
         static let intentionStartDate = "intentionStartDate"
         static let intentionDurationDays = "intentionDurationDays"
         static let intentionName = "intentionName"

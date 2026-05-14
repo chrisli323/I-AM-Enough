@@ -15,6 +15,7 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
     @State private var showingSplash = true
+    @State private var showingDisclaimer = false
     @State private var showingWelcome = false
     @State private var showingNotificationPrompt = false
 
@@ -61,8 +62,13 @@ struct ContentView: View {
                     appState.audioService.start()
                     // Check if a challenge completed while app was closed
                     checkIntentionExpiry()
-                    // Show welcome on first ever launch
-                    if !appState.preferences.hasSeenWelcome {
+                    // Disclaimer must be accepted before anything else is shown
+                    if !appState.preferences.hasAcceptedDisclaimer {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            showingDisclaimer = true
+                        }
+                    } else if !appState.preferences.hasSeenWelcome {
+                        // Show welcome on first ever launch (after disclaimer)
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             showingWelcome = true
                         }
@@ -98,6 +104,22 @@ struct ContentView: View {
                 appState.router.showCongratulations = false
                 appState.preferences.clearIntention()
                 appState.router.selectedTab = .home
+            }
+            .presentationDetents([.large])
+            .presentationCornerRadius(28)
+            .presentationDragIndicator(.hidden)
+            .interactiveDismissDisabled(true)
+        }
+        .sheet(isPresented: $showingDisclaimer) {
+            DisclaimerView {
+                appState.preferences.hasAcceptedDisclaimer = true
+                showingDisclaimer = false
+                // After disclaimer, show welcome if it's a first launch
+                if !appState.preferences.hasSeenWelcome {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        showingWelcome = true
+                    }
+                }
             }
             .presentationDetents([.large])
             .presentationCornerRadius(28)
