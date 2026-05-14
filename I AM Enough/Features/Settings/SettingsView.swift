@@ -118,6 +118,23 @@ struct SettingsView: View {
                                 .padding(.vertical, 4)
                             }
                             .buttonStyle(.plain)
+                            divider
+                            // Disclaimer
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack(spacing: 14) {
+                                    settingsIcon("cross.circle", color: Theme.inkFaded)
+                                    Text("Disclaimer")
+                                        .font(Theme.body(16))
+                                        .foregroundStyle(Theme.ink)
+                                }
+                                Text("This app is designed for personal growth and inspirational purposes only. It is not intended to diagnose, treat, cure, or prevent any disease, mental health condition, or addiction, and does not constitute professional medical or therapeutic advice. If you are struggling with addiction or a mental health condition, please seek guidance from a qualified healthcare professional.")
+                                    .font(Theme.bodyItalic(12))
+                                    .foregroundStyle(Theme.inkFaded.opacity(0.7))
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .lineSpacing(3)
+                                    .padding(.leading, 42)
+                            }
+                            .padding(.vertical, 4)
                         }
 
                         // Footer
