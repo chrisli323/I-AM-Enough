@@ -28,6 +28,7 @@ struct SettingsView: View {
     @State private var isRestoringPurchases = false
     @State private var restoreMessage: String?
     @State private var showingRestoreAlert = false
+    @State private var disclaimerExpanded = false
 
     var body: some View {
         NavigationStack {
@@ -119,22 +120,41 @@ struct SettingsView: View {
                             }
                             .buttonStyle(.plain)
                             divider
-                            // Disclaimer
-                            VStack(alignment: .leading, spacing: 6) {
-                                HStack(spacing: 14) {
-                                    settingsIcon("cross.circle", color: Theme.inkFaded)
-                                    Text("Disclaimer")
-                                        .font(Theme.body(16))
-                                        .foregroundStyle(Theme.ink)
+                            // Collapsible disclaimer
+                            VStack(alignment: .leading, spacing: 0) {
+                                Button {
+                                    withAnimation(.easeInOut(duration: 0.25)) {
+                                        disclaimerExpanded.toggle()
+                                    }
+                                } label: {
+                                    HStack(spacing: 14) {
+                                        settingsIcon("cross.circle", color: Theme.inkFaded)
+                                        Text("Disclaimer")
+                                            .font(Theme.body(16))
+                                            .foregroundStyle(Theme.ink)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption)
+                                            .foregroundStyle(Theme.inkFaded.opacity(0.6))
+                                            .rotationEffect(.degrees(disclaimerExpanded ? 90 : 0))
+                                            .animation(.easeInOut(duration: 0.25), value: disclaimerExpanded)
+                                    }
+                                    .padding(.vertical, 4)
                                 }
-                                Text("This app is designed for personal growth and inspirational purposes only. It is not a medical device and is not intended to diagnose, treat, cure, or prevent any disease, mental health condition, or addiction. The teachings and content in this app do not constitute professional medical, psychological, or therapeutic advice. The developers of I AM Enough assume no responsibility or liability for any actions taken, decisions made, or outcomes experienced as a result of using this app. You are solely responsible for your own choices and wellbeing. If you are struggling with addiction, mental health, or any medical condition, please seek guidance from a qualified healthcare professional.")
-                                    .font(Theme.bodyItalic(12))
-                                    .foregroundStyle(Theme.inkFaded.opacity(0.7))
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .lineSpacing(3)
-                                    .padding(.leading, 42)
+                                .buttonStyle(.plain)
+
+                                if disclaimerExpanded {
+                                    Text("This app is designed for personal growth and inspirational purposes only. It is not a medical device and is not intended to diagnose, treat, cure, or prevent any disease, mental health condition, or addiction. The teachings and content in this app do not constitute professional medical, psychological, or therapeutic advice. The developers of I AM Enough assume no responsibility or liability for any actions taken, decisions made, or outcomes experienced as a result of using this app. You are solely responsible for your own choices and wellbeing. If you are struggling with addiction, mental health, or any medical condition, please seek guidance from a qualified healthcare professional.")
+                                        .font(Theme.bodyItalic(12))
+                                        .foregroundStyle(Theme.inkFaded.opacity(0.7))
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .lineSpacing(3)
+                                        .padding(.leading, 42)
+                                        .padding(.top, 6)
+                                        .padding(.bottom, 4)
+                                        .transition(.opacity.combined(with: .move(edge: .top)))
+                                }
                             }
-                            .padding(.vertical, 4)
                         }
 
                         // Footer
