@@ -152,7 +152,7 @@ struct SettingsView: View {
                                         .padding(.leading, 42)
                                         .padding(.top, 6)
                                         .padding(.bottom, 4)
-                                        .transition(.opacity.combined(with: .move(edge: .top)))
+                                        .transition(.opacity)
                                 }
                             }
                         }
