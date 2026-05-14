@@ -127,7 +127,7 @@ struct SettingsView: View {
                                         .font(Theme.body(16))
                                         .foregroundStyle(Theme.ink)
                                 }
-                                Text("This app is designed for personal growth and inspirational purposes only. It is not intended to diagnose, treat, cure, or prevent any disease, mental health condition, or addiction, and does not constitute professional medical or therapeutic advice. If you are struggling with addiction or a mental health condition, please seek guidance from a qualified healthcare professional.")
+                                Text("This app is designed for personal growth and inspirational purposes only. It is not a medical device and is not intended to diagnose, treat, cure, or prevent any disease, mental health condition, or addiction. The teachings and content in this app do not constitute professional medical, psychological, or therapeutic advice. The developers of I AM Enough assume no responsibility or liability for any actions taken, decisions made, or outcomes experienced as a result of using this app. You are solely responsible for your own choices and wellbeing. If you are struggling with addiction, mental health, or any medical condition, please seek guidance from a qualified healthcare professional.")
                                     .font(Theme.bodyItalic(12))
                                     .foregroundStyle(Theme.inkFaded.opacity(0.7))
                                     .fixedSize(horizontal: false, vertical: true)
