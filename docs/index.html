@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>I AM Enough</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Georgia, serif;
+      background: #F7EFD9;
+      color: #3B2611;
+      line-height: 1.8;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 72px 24px 56px;
+      border-bottom: 1px solid rgba(191,158,96,0.3);
+    }
+    .hero-ornament {
+      font-size: 28px;
+      color: #BF9E60;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-family: Georgia, serif;
+      font-size: 2.6em;
+      font-weight: bold;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+    .hero .tagline {
+      font-style: italic;
+      font-size: 1.1em;
+      color: #6F5026;
+      margin-bottom: 32px;
+    }
+    .badge-btn {
+      display: inline-block;
+      margin-top: 8px;
+    }
+    .badge-btn img {
+      height: 52px;
+    }
+
+    /* ── Sections ── */
+    .section {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 56px 24px;
+      border-bottom: 1px solid rgba(191,158,96,0.2);
+    }
+    .section:last-of-type { border-bottom: none; }
+
+    .label {
+      font-size: 0.72em;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #94733F;
+      margin-bottom: 14px;
+    }
+    .section h2 {
+      font-size: 1.5em;
+      margin-bottom: 14px;
+    }
+    .section p {
+      font-size: 1em;
+      color: #3B2611;
+      margin-bottom: 14px;
+    }
+
+    /* ── Features grid ── */
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-top: 12px;
+    }
+    @media (max-width: 520px) {
+      .features { grid-template-columns: 1fr; }
+    }
+    .feature-card {
+      background: rgba(255,255,255,0.45);
+      border: 0.6px solid rgba(191,158,96,0.35);
+      border-radius: 12px;
+      padding: 20px 18px;
+    }
+    .feature-card .icon {
+      font-size: 1.5em;
+      margin-bottom: 8px;
+    }
+    .feature-card h3 {
+      font-size: 1em;
+      margin-bottom: 6px;
+    }
+    .feature-card p {
+      font-size: 0.88em;
+      color: #6F5026;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    /* ── Support ── */
+    .support-box {
+      background: rgba(255,255,255,0.5);
+      border: 0.6px solid rgba(191,158,96,0.4);
+      border-radius: 14px;
+      padding: 28px 24px;
+      margin-top: 16px;
+    }
+    .support-box p { margin-bottom: 10px; }
+    .support-box a {
+      color: #3B2611;
+      font-weight: bold;
+    }
+    .support-box a:hover { color: #BF9E60; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 36px 24px 48px;
+      font-size: 0.85em;
+      color: #94733F;
+    }
+    footer a {
+      color: #6F5026;
+      text-decoration: underline;
+    }
+    footer .ornament {
+      font-size: 1.2em;
+      color: #BF9E60;
+      display: block;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Hero ── -->
+  <div class="hero">
+    <div class="hero-ornament">✦</div>
+    <h1>I AM Enough</h1>
+    <p class="tagline">one day at a time</p>
+    <a class="badge-btn" href="https://apps.apple.com/app/i-am-enough" target="_blank">
+      <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
+           alt="Download on the App Store" />
+    </a>
+  </div>
+
+  <!-- ── About ── -->
+  <div class="section">
+    <p class="label">About</p>
+    <h2>Begin a journey inward.</h2>
+    <p>
+      I AM Enough is a daily growth app built around a simple truth: lasting change
+      doesn't come from a single breakthrough. It comes from the quiet, steady act
+      of returning to something real — every single day.
+    </p>
+    <p>
+      Each morning, a new teaching waits for you. Set a personal intention. Journal
+      your reflections. Earn badges that honor your consistency. Everything lives
+      privately on your device — no account, no ads, no internet required.
+    </p>
+
+    <div class="features">
+      <div class="feature-card">
+        <div class="icon">☀️</div>
+        <h3>365 Daily Teachings</h3>
+        <p>A full year of unique reflections — one every morning, no repeats.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📖</div>
+        <h3>Journal & Favorites</h3>
+        <p>Write freely, attach photos, and save teachings that move you.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🎯</div>
+        <h3>Set an Intention</h3>
+        <p>Name your challenge — any goal, any timeline. We're rooting for you.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🏅</div>
+        <h3>Badges & Milestones</h3>
+        <p>Bronze, Silver, Gold, and the rare Platinum at one full year.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Pricing ── -->
+  <div class="section">
+    <p class="label">Pricing</p>
+    <h2>Free to try. Yours forever.</h2>
+    <p>
+      Explore your first 7 teachings completely free. Unlock all 365 for a
+      one-time purchase of <strong>$4.99</strong> — no subscription, no recurring
+      charges, ever. Your data always stays on your device.
+    </p>
+  </div>
+
+  <!-- ── Support ── -->
+  <div class="section" id="support">
+    <p class="label">Support</p>
+    <h2>We're here to help.</h2>
+    <p>
+      Have a question, found a bug, or just want to share how the app is going?
+      Reach out anytime — we'd love to hear from you.
+    </p>
+    <div class="support-box">
+      <p><strong>Email support</strong></p>
+      <p>
+        <a href="mailto:chrisli323@gmail.com">chrisli323@gmail.com</a>
+      </p>
+      <p style="font-size:0.9em; color:#6F5026; margin-top:8px;">
+        We typically respond within 1–2 business days.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Footer ── -->
+  <footer>
+    <span class="ornament">❦</span>
+    <p>
+      <a href="privacy.html">Privacy Policy</a>
+    </p>
+    <p style="margin-top: 10px;">&copy; 2026 Chris Lee. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
