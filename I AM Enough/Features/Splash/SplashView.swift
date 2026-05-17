@@ -13,7 +13,15 @@ struct SplashView: View {
 
     var body: some View {
         ZStack {
-            Theme.parchmentBackground
+            GeometryReader { geo in
+                Image("Splash")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: geo.size.width, height: geo.size.height)
+                    .clipped()
+            }
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
 
             ZStack {
                 SplashLogoView()
