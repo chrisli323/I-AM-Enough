@@ -9,6 +9,7 @@
 import SwiftUI
 import SwiftData
 import StoreKit
+import UIKit
 
 struct SettingsView: View {
     @Environment(AppState.self) private var appState
@@ -228,6 +229,23 @@ struct SettingsView: View {
             .presentationDetents([.large])
             .presentationCornerRadius(28)
             .presentationDragIndicator(.hidden)
+        }
+        // Notification permissions denied — guide user to iOS Settings
+        .alert("Notifications Blocked", isPresented: Binding(
+            get: { appState.notificationService.permissionsDenied },
+            set: { if !$0 { appState.notificationService.permissionsDenied = false } }
+        )) {
+            Button("Open Settings") {
+                appState.notificationService.permissionsDenied = false
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                appState.notificationService.permissionsDenied = false
+            }
+        } message: {
+            Text("To receive daily reminders, please allow notifications for I AM Enough in Settings → Notifications.")
         }
         .alert("Reset Journey?", isPresented: $showingSobrietyResetConfirm) {
             Button("Cancel", role: .cancel) {}

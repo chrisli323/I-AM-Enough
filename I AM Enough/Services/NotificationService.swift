@@ -59,6 +59,12 @@ final class NotificationService {
 
     private(set) var authorizationStatus: UNAuthorizationStatus = .notDetermined
 
+    /// Becomes `true` when the user tries to enable reminders but iOS
+    /// notifications are blocked. The UI observes this to show an alert
+    /// directing the user to Settings. Reset to `false` after the alert
+    /// is dismissed.
+    var permissionsDenied: Bool = false
+
     private let preferences: UserPreferences
     private let center = UNUserNotificationCenter.current()
 
@@ -91,9 +97,11 @@ final class NotificationService {
             Task { @MainActor in
                 self.authorizationStatus = granted ? .authorized : .denied
                 if granted {
+                    self.permissionsDenied = false
                     self.scheduleDaily()
                 } else {
                     self.isEnabled = false
+                    self.permissionsDenied = true
                 }
             }
         }
