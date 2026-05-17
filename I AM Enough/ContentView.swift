@@ -82,7 +82,7 @@ struct ContentView: View {
             }
         }
         .preferredColorScheme(.light)
-        .statusBarHidden(true)
+        .statusBarHidden(appState.preferences.statusBarHidden)
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active { checkIntentionExpiry() }
         }

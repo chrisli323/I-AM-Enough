@@ -64,6 +64,11 @@ struct SettingsView: View {
                             appAccessSection
                         }
 
+                        // MARK: - Display
+                        settingsSection(title: "DISPLAY") {
+                            statusBarToggleRow
+                        }
+
                         // MARK: - Audio
                         settingsSection(title: "AMBIENT AUDIO") {
                             audioToggleRow
@@ -651,6 +656,35 @@ struct SettingsView: View {
             }
             .buttonStyle(.plain)
         }
+    }
+
+    // MARK: - Display Rows
+
+    private var statusBarToggleRow: some View {
+        @Bindable var prefs = appState.preferences
+
+        return HStack(spacing: 14) {
+            settingsIcon(
+                prefs.statusBarHidden ? "minus.circle" : "clock",
+                color: prefs.statusBarHidden ? Theme.accentGold : Theme.inkFaded
+            )
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Hide Status Bar")
+                    .font(Theme.body(16))
+                    .foregroundStyle(Theme.ink)
+                Text(prefs.statusBarHidden ? "Time & signal hidden" : "Showing time & signal")
+                    .font(Theme.bodyItalic(13))
+                    .foregroundStyle(Theme.inkFaded)
+            }
+
+            Spacer()
+
+            Toggle("", isOn: $prefs.statusBarHidden)
+                .labelsHidden()
+                .tint(Theme.accentGold)
+        }
+        .padding(.vertical, 4)
     }
 
     // MARK: - Audio Rows

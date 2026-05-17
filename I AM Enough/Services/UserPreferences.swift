@@ -335,6 +335,25 @@ final class UserPreferences {
         return intentionDaysRemaining == 0
     }
 
+    // MARK: - Display
+
+    /// Whether the status bar (time, signal, battery) is hidden while the
+    /// app is open. Defaults to `true` for clean screenshots.
+    var statusBarHidden: Bool {
+        get {
+            access(keyPath: \.statusBarHidden)
+            // Default true — use object check so false is distinguishable from "never set"
+            return defaults.object(forKey: Keys.statusBarHidden) != nil
+                ? defaults.bool(forKey: Keys.statusBarHidden)
+                : true
+        }
+        set {
+            withMutation(keyPath: \.statusBarHidden) {
+                defaults.set(newValue, forKey: Keys.statusBarHidden)
+            }
+        }
+    }
+
     // MARK: - Keys
 
     private enum Keys {
@@ -355,5 +374,6 @@ final class UserPreferences {
         static let intentionDurationDays = "intentionDurationDays"
         static let intentionName = "intentionName"
         static let intentionExpiryDate = "intentionExpiryDate" // ⚠️ TODO: REMOVE BEFORE RELEASE
+        static let statusBarHidden = "statusBarHidden"
     }
 }
