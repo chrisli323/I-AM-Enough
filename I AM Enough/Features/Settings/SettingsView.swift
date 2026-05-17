@@ -13,9 +13,6 @@ import UIKit
 
 struct SettingsView: View {
     @Environment(AppState.self) private var appState
-    @Environment(\.openURL) private var openURL
-
-    private let privacyPolicyURL = URL(string: "https://chrisli323.github.io/I-AM-Enough/privacy.html")!
     @Query(sort: \CompletedChallenge.completedAt, order: .reverse) private var completedChallenges: [CompletedChallenge]
 
     @State private var showingSobrietySetup = false
@@ -104,8 +101,8 @@ struct SettingsView: View {
                                 value: "\(appState.teachingStore.count) available"
                             )
                             divider
-                            Button {
-                                openURL(privacyPolicyURL)
+                            NavigationLink {
+                                PrivacyPolicyView()
                             } label: {
                                 HStack(spacing: 14) {
                                     settingsIcon("lock.shield", color: Theme.inkFaded)
@@ -113,7 +110,7 @@ struct SettingsView: View {
                                         .font(Theme.body(16))
                                         .foregroundStyle(Theme.ink)
                                     Spacer()
-                                    Image(systemName: "arrow.up.right")
+                                    Image(systemName: "chevron.right")
                                         .font(.caption)
                                         .foregroundStyle(Theme.inkFaded.opacity(0.6))
                                 }
