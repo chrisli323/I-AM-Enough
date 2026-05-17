@@ -302,36 +302,19 @@ final class UserPreferences {
         intentionName = name.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    // ⚠️ TODO: REMOVE BEFORE RELEASE — test-only exact expiry timestamp
-    var intentionExpiryDate: Date? {
-        get {
-            access(keyPath: \.intentionExpiryDate)
-            return defaults.object(forKey: Keys.intentionExpiryDate) as? Date
-        }
-        set {
-            withMutation(keyPath: \.intentionExpiryDate) {
-                defaults.set(newValue, forKey: Keys.intentionExpiryDate)
-            }
-        }
-    }
-
     /// Cancel the active intention challenge.
     func clearIntention() {
         intentionStartDate = nil
         intentionDurationDays = 0
         intentionName = ""
-        intentionExpiryDate = nil   // ⚠️ TODO: REMOVE WITH intentionExpiryDate
     }
 
-    /// True when a challenge was set and has fully expired (0 days remaining).
+    /// True when a challenge was set and has fully elapsed (0 days remaining).
     /// Used to trigger the congratulations screen on next app open.
     var isIntentionExpired: Bool {
         access(keyPath: \.intentionStartDate)
         access(keyPath: \.intentionDurationDays)
-        access(keyPath: \.intentionExpiryDate)
         guard intentionDurationDays > 0 else { return false }
-        // ⚠️ TODO: REMOVE test-mode branch before release
-        if let expiry = intentionExpiryDate { return Date() >= expiry }
         return intentionDaysRemaining == 0
     }
 
@@ -373,7 +356,6 @@ final class UserPreferences {
         static let intentionStartDate = "intentionStartDate"
         static let intentionDurationDays = "intentionDurationDays"
         static let intentionName = "intentionName"
-        static let intentionExpiryDate = "intentionExpiryDate" // ⚠️ TODO: REMOVE BEFORE RELEASE
         static let statusBarHidden = "statusBarHidden"
     }
 }

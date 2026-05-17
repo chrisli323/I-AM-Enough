@@ -212,18 +212,8 @@ struct SettingsView: View {
                                intentionName: $intentionNameText,
                                isIntentionActive: appState.preferences.intentionDurationDays > 0) {
                 if let days = selectedChallengeDays {
-                    if days == -1 {
-                        // ⚠️ TODO: REMOVE BEFORE RELEASE — 1-minute test mode (Bronze)
-                        appState.preferences.setIntention(days: 1, name: intentionNameText)
-                        appState.preferences.intentionExpiryDate = Date().addingTimeInterval(60)
-                    } else if days == -2 {
-                        // ⚠️ TODO: REMOVE BEFORE RELEASE — 1-minute test mode (Platinum)
-                        appState.preferences.setIntention(days: 365, name: intentionNameText)
-                        appState.preferences.intentionExpiryDate = Date().addingTimeInterval(60)
-                    } else {
-                        appState.preferences.setIntention(days: days, name: intentionNameText)
-                        appState.notificationService.scheduleIntentionCompletion(in: days)
-                    }
+                    appState.preferences.setIntention(days: days, name: intentionNameText)
+                    appState.notificationService.scheduleIntentionCompletion(in: days)
                 }
                 intentionNameText = ""
                 showingIntentionSetup = false

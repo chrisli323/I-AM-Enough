@@ -18,12 +18,12 @@ struct IntentionSetupSheet: View {
     @FocusState private var nameFieldFocused: Bool
 
     private let gridChallenges: [(label: String, days: Int)] = [
-        ("1 Min ⚡",  -1),  // ⚠️ TODO: REMOVE BEFORE RELEASE — test only
-        ("1 Yr ⚡",   -2),  // ⚠️ TODO: REMOVE BEFORE RELEASE — test only
         ("1 Day",    1),
         ("1 Week",   7),
         ("2 Weeks",  14),
         ("3 Weeks",  21),
+        ("30 Days",  30),
+        ("60 Days",  60),
     ]
 
     private let columns = [
