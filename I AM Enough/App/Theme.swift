@@ -49,16 +49,18 @@ enum Theme {
             : UIColor(red: 0.231, green: 0.149, blue: 0.067, alpha: 1) // #3B2611
     })
     /// Secondary ink — medium brown (light) / golden tan (dark).
+    /// Darkened from #6F5026 → #523018 for contrast on the parchment texture.
     static let inkSecondary = Color(uiColor: UIColor { t in
         t.userInterfaceStyle == .dark
             ? UIColor(red: 0.78, green: 0.68, blue: 0.51, alpha: 1)  // #C7AD83
-            : UIColor(red: 0.435, green: 0.314, blue: 0.149, alpha: 1) // #6F5026
+            : UIColor(red: 0.322, green: 0.188, blue: 0.094, alpha: 1) // #523018
     })
-    /// Faded ink — muted tan (light) / muted gold (dark).
+    /// Faded ink — warm dark brown (light) / muted gold (dark).
+    /// Darkened from #94733F → #6B4A24 for contrast on the parchment texture.
     static let inkFaded = Color(uiColor: UIColor { t in
         t.userInterfaceStyle == .dark
             ? UIColor(red: 0.63, green: 0.54, blue: 0.38, alpha: 1)  // #A18A61
-            : UIColor(red: 0.580, green: 0.451, blue: 0.247, alpha: 1) // #94733F
+            : UIColor(red: 0.420, green: 0.290, blue: 0.141, alpha: 1) // #6B4A24
     })
     /// Faded ink darkened — used for Day N header and selected tab icon.
     static let inkFadedDark = Color(uiColor: UIColor { t in
@@ -76,32 +78,20 @@ enum Theme {
 
     // MARK: - Background
 
-    /// The full parchment surface: warm gradient + subtle aged-edges
-    /// vignette + a fine paper-grain noise texture + soft inner shadows
-    /// at all four edges. Used as the root background of the teaching
-    /// view. All layers are non-interactive.
+    /// The full parchment surface — rendered from the bundled parchmentBG
+    /// image asset so every screen matches the App Store screenshots exactly.
+    /// GeometryReader pins the image to the exact screen size so it never
+    /// affects the ZStack layout of the views placed on top of it.
     static var parchmentBackground: some View {
-        ZStack {
-            LinearGradient(
-                colors: [parchmentLight, parchmentDark],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-
-            // Aged-paper radial vignette — center is brightest, edges
-            // pick up a faint warm shadow.
-            RadialGradient(
-                colors: [Color.clear, parchmentShadow.opacity(0.20)],
-                center: .center,
-                startRadius: 200,
-                endRadius: 600
-            )
-
-            PaperGrain()
-
-            PageEdgeShadow()
+        GeometryReader { geo in
+            Image("parchmentBG")
+                .resizable()
+                .scaledToFill()
+                .frame(width: geo.size.width, height: geo.size.height)
+                .clipped()
         }
         .ignoresSafeArea()
+        .allowsHitTesting(false)
     }
 
     // MARK: - Fonts

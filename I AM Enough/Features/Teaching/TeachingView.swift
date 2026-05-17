@@ -92,14 +92,23 @@ struct TeachingView: View {
         // user's haptics settings automatically.
         .sensoryFeedback(.selection, trigger: selectedIndex)
         .onAppear {
-            // Snap to today on first appearance. Re-snap on subsequent
-            // appearances too — we want opening the app to always land
-            // on today's teaching, never on a stale historical page.
-            selectedIndex = maxBackDays // snap to today (not the end)
-            // Signal the initial page to start its fade-in after the
-            // splash animation has fully completed (~3 s splash + 0.4 s fade).
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3.3) {
-                initialAnimReady = true
+            // Snap to today on first appearance and on every subsequent
+            // return (tab switch, app foreground, etc.).
+            selectedIndex = maxBackDays
+
+            if initialAnimReady {
+                // Subsequent appearance — the initialAnimReady observer won't
+                // fire again, so signal today's page to animate in directly.
+                // Short delay lets the UIPageViewController finish its
+                // (animated:false) snap before we request the fade-in.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    snapToTodaySignal.toggle()
+                }
+            } else {
+                // First launch — wait for the splash to fully clear.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.3) {
+                    initialAnimReady = true
+                }
             }
         }
         // Re-tapping the Today tab while already on it fires this signal.
@@ -214,6 +223,7 @@ struct TeachingPage: View {
     @State private var displayDayNumber: Int = 0
     /// Shows the paywall as a sheet when the user taps "Unlock" in the trial banner.
     @State private var showingPaywallSheet = false
+    @State private var bannerPulsing = false
 
     var body: some View {
         let teaching = appState.scheduler.teaching(for: date)
@@ -243,7 +253,7 @@ struct TeachingPage: View {
                 HStack {
                     reflectInJournalButton
                     Spacer()
-                    favoriteButton(teachingId: teaching.id)
+                    favoriteButton(teachingId: teaching.id, date: date)
                     shareButton(teaching: teaching)
                 }
 
@@ -267,10 +277,13 @@ struct TeachingPage: View {
         .background(Theme.parchmentBackground.ignoresSafeArea())
         .onAppear {
             checkFavorite(teachingId: teaching.id)
-            // All pages start at 0.1 opacity (contentVisible = false).
-            // Today's page waits for the initialAnimReady signal below.
-            // Adjacent pages will animate in via onChange(of: isSelected)
-            // when the user actually swipes to them.
+            // Safety net: if this page is already the selected page when it
+            // appears (animated:false snap-back, tab return, app foreground),
+            // onChange(of: isSelected) won't fire because isSelected didn't
+            // change. Call animateIn directly so the page is never stuck faded.
+            if isSelected && initialAnimReady {
+                animateIn(dayNumber: dayNumber)
+            }
         }
         // Fires when the user swipes to or away from this page.
         .onChange(of: isSelected) { _, nowSelected in
@@ -327,7 +340,7 @@ struct TeachingPage: View {
             .font(Theme.bodyItalic(12))
             .foregroundStyle(Theme.inkFaded.opacity(0.6))
 
-            // Tappable unlock link
+            // Tappable unlock link — gently pulses to draw attention
             Button {
                 showingPaywallSheet = true
             } label: {
@@ -336,6 +349,11 @@ struct TeachingPage: View {
                     .foregroundStyle(Theme.accentGold.opacity(0.85))
             }
             .buttonStyle(.plain)
+            .scaleEffect(bannerPulsing ? 1.08 : 1.0)
+            .animation(
+                .easeInOut(duration: 1.3).repeatForever(autoreverses: true),
+                value: bannerPulsing
+            )
         }
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
@@ -357,6 +375,11 @@ struct TeachingPage: View {
         }
         withAnimation(.spring(response: 0.65, dampingFraction: 0.7)) {
             displayDayNumber = dayNumber
+        }
+        // Start the banner pulse after the page has fully faded in.
+        bannerPulsing = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            bannerPulsing = true
         }
     }
 
@@ -475,9 +498,9 @@ struct TeachingPage: View {
         """
     }
 
-    private func favoriteButton(teachingId: Int) -> some View {
+    private func favoriteButton(teachingId: Int, date: Date) -> some View {
         Button {
-            toggleFavorite(teachingId: teachingId)
+            toggleFavorite(teachingId: teachingId, date: date)
         } label: {
             Image(systemName: isFavorited ? "heart.fill" : "heart")
                 .font(.system(size: 20))
@@ -496,7 +519,7 @@ struct TeachingPage: View {
         isFavorited = (try? modelContext.fetchCount(descriptor)) ?? 0 > 0
     }
 
-    private func toggleFavorite(teachingId: Int) {
+    private func toggleFavorite(teachingId: Int, date: Date) {
         let descriptor = FetchDescriptor<FavoriteTeaching>(
             predicate: #Predicate { $0.teachingId == teachingId }
         )
@@ -504,7 +527,7 @@ struct TeachingPage: View {
             modelContext.delete(existing)
             isFavorited = false
         } else {
-            modelContext.insert(FavoriteTeaching(teachingId: teachingId))
+            modelContext.insert(FavoriteTeaching(teachingId: teachingId, savedAt: date))
             isFavorited = true
         }
         try? modelContext.save()

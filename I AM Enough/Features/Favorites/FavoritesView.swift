@@ -4,7 +4,8 @@
 //
 //  Lists all favorited teachings, most recently saved first.
 //  Tapping a row expands it to show the full teaching text.
-//  Swipe to delete removes the favorite.
+//  Swipe left, long-press, or tap the heart to remove a favorite —
+//  all three paths require a confirmation alert before deletion.
 //
 
 import SwiftUI
@@ -18,6 +19,7 @@ struct FavoritesView: View {
     private var favorites: [FavoriteTeaching]
 
     @State private var expandedId: Int?
+    @State private var favoriteToDelete: FavoriteTeaching? = nil
 
     var body: some View {
         NavigationStack {
@@ -25,23 +27,41 @@ struct FavoritesView: View {
                 Theme.parchmentBackground
                     .ignoresSafeArea()
 
-                ScrollViewReader { _ in
-                    ScrollView {
-                        if favorites.isEmpty {
-                            emptyState
-                                .padding(.top, 80)
-                        } else {
-                            LazyVStack(spacing: 14) {
-                                ForEach(favorites) { favorite in
-                                    favoriteRow(favorite)
+                if favorites.isEmpty {
+                    emptyState
+                } else {
+                    List {
+                        ForEach(favorites) { favorite in
+                            favoriteRow(favorite)
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 7, leading: 20, bottom: 7, trailing: 20))
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button(role: .destructive) {
+                                        favoriteToDelete = favorite
+                                    } label: {
+                                        Label("Remove", systemImage: "heart.slash")
+                                    }
                                 }
-                            }
-                            .padding(.horizontal, 20)
-                            .padding(.top, 20)
-                            .padding(.bottom, 24)
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        favoriteToDelete = favorite
+                                    } label: {
+                                        Label("Remove Favorite", systemImage: "heart.slash")
+                                    }
+                                }
                         }
+
+                        // Bottom breathing room
+                        Color.clear
+                            .frame(height: 10)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
                     .scrollIndicators(.hidden)
+                    .padding(.top, 10)
                 }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
@@ -53,8 +73,29 @@ struct FavoritesView: View {
                         .foregroundStyle(Theme.ink)
                 }
             }
+            .alert("Remove Favorite?", isPresented: Binding(
+                get: { favoriteToDelete != nil },
+                set: { if !$0 { favoriteToDelete = nil } }
+            )) {
+                Button("Remove", role: .destructive) {
+                    if let fav = favoriteToDelete {
+                        withAnimation(.snappy) {
+                            modelContext.delete(fav)
+                            try? modelContext.save()
+                        }
+                    }
+                    favoriteToDelete = nil
+                }
+                Button("Cancel", role: .cancel) {
+                    favoriteToDelete = nil
+                }
+            } message: {
+                Text("This teaching will be removed from your favorites.")
+            }
         }
     }
+
+    // MARK: - Subviews
 
     private var emptyState: some View {
         VStack(spacing: 16) {
@@ -73,7 +114,17 @@ struct FavoritesView: View {
     }
 
     private func favoriteRow(_ favorite: FavoriteTeaching) -> some View {
-        let teaching = appState.teachingStore.teaching(at: favorite.teachingId - 1)
+        // Milestone teachings have negative IDs (id = -dayNumber).
+        // General teachings have positive IDs (1-based array position).
+        let teaching: Teaching = {
+            if favorite.teachingId < 0 {
+                let dayNumber = -favorite.teachingId
+                return appState.teachingStore.milestone(for: dayNumber)
+                    ?? appState.teachingStore.teaching(at: 0)
+            } else {
+                return appState.teachingStore.teaching(at: favorite.teachingId - 1)
+            }
+        }()
         let isExpanded = expandedId == favorite.teachingId
 
         return Button {
@@ -99,11 +150,9 @@ struct FavoritesView: View {
 
                     Spacer(minLength: 8)
 
+                    // Heart button — routes through the confirmation alert
                     Button {
-                        withAnimation(.snappy) {
-                            modelContext.delete(favorite)
-                            try? modelContext.save()
-                        }
+                        favoriteToDelete = favorite
                     } label: {
                         Image(systemName: "heart.fill")
                             .font(.system(size: 16))

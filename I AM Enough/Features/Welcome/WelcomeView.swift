@@ -137,7 +137,7 @@ struct WelcomeView: View {
             VStack(spacing: 0) {
                 // Soft fade so content dissolves into the button area
                 LinearGradient(
-                    colors: [Color.clear, Theme.parchmentDark.opacity(0.96)],
+                    colors: [Color.clear, Theme.parchmentDark.opacity(0.65)],
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -168,7 +168,7 @@ struct WelcomeView: View {
                 .buttonStyle(.plain)
                 .padding(.horizontal, Theme.pageHorizontalPadding)
                 .padding(.bottom, 40)
-                .background(Theme.parchmentDark.opacity(0.96))
+                .background(Theme.parchmentDark.opacity(0.65))
             }
         }
         .ignoresSafeArea(edges: .bottom)

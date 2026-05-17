@@ -9,6 +9,10 @@
 //  Watches Router.pendingJournalDate so the teaching screen can deep-link
 //  into a specific day's entry by switching to this tab.
 //
+//  Swipe left on any row to reveal a delete button. Long-press for the
+//  same option via context menu. Both paths require a confirmation alert
+//  before the entry and its photos are permanently removed.
+//
 
 import SwiftUI
 import SwiftData
@@ -21,6 +25,7 @@ struct JournalListView: View {
     private var entries: [JournalEntry]
 
     @State private var path = NavigationPath()
+    @State private var entryToDelete: JournalEntry? = nil
 
     var body: some View {
         @Bindable var router = appState.router
@@ -30,32 +35,51 @@ struct JournalListView: View {
                 Theme.parchmentBackground
                     .ignoresSafeArea()
 
-                ScrollViewReader { _ in
-                    ScrollView {
-                        if entries.isEmpty {
-                            emptyState
-                                .padding(.top, 80)
-                        } else {
-                            LazyVStack(spacing: 0) {
-                                ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
-                                    Button {
-                                        path.append(entry.date)
-                                    } label: {
-                                        JournalEntryRow(entry: entry)
-                                    }
-                                    .buttonStyle(PressScaleButtonStyle())
-
+                if entries.isEmpty {
+                    emptyState
+                } else {
+                    List {
+                        ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
+                            Button {
+                                path.append(entry.date)
+                            } label: {
+                                VStack(spacing: 0) {
+                                    JournalEntryRow(entry: entry)
                                     if index < entries.count - 1 {
                                         FleuronDivider()
                                     }
                                 }
                             }
-                            .padding(.horizontal, 20)
-                            .padding(.top, 20)
-                            .padding(.bottom, 24)
+                            .buttonStyle(PressScaleButtonStyle())
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20))
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    entryToDelete = entry
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    entryToDelete = entry
+                                } label: {
+                                    Label("Delete Entry", systemImage: "trash")
+                                }
+                            }
                         }
+
+                        // Bottom breathing room
+                        Color.clear
+                            .frame(height: 24)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
                     .scrollIndicators(.hidden)
+                    .padding(.top, 10)
                 }
             }
             .toolbarBackground(.hidden, for: .navigationBar)
@@ -78,6 +102,20 @@ struct JournalListView: View {
             .navigationDestination(for: Date.self) { date in
                 JournalEntryView(date: date)
             }
+            .alert("Delete Entry?", isPresented: Binding(
+                get: { entryToDelete != nil },
+                set: { if !$0 { entryToDelete = nil } }
+            )) {
+                Button("Delete", role: .destructive) {
+                    if let entry = entryToDelete { deleteEntry(entry) }
+                    entryToDelete = nil
+                }
+                Button("Cancel", role: .cancel) {
+                    entryToDelete = nil
+                }
+            } message: {
+                Text("This entry and any attached photos will be permanently removed.")
+            }
         }
         .onChange(of: router.pendingJournalDate) { _, newValue in
             if let date = newValue {
@@ -86,6 +124,19 @@ struct JournalListView: View {
                 router.pendingJournalDate = nil
             }
         }
+    }
+
+    // MARK: - Helpers
+
+    private func deleteEntry(_ entry: JournalEntry) {
+        for filename in entry.photoFilenames {
+            PhotoStorage.delete(filename)
+        }
+        if let legacy = entry.photoFilename {
+            PhotoStorage.delete(legacy)
+        }
+        modelContext.delete(entry)
+        try? modelContext.save()
     }
 
     // MARK: - Subviews

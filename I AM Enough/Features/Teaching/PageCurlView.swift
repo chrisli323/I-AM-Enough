@@ -55,11 +55,16 @@ struct PageCurlView: UIViewControllerRepresentable {
         }
 
         // Programmatic navigation — snap-to-today or any other external change.
+        //
+        // ⚠️ animated: false is intentional. UIPageViewController silently
+        // drops a setViewControllers call (completion fires with false) when
+        // called while a user-initiated curl snap is still in progress. Using
+        // animated: false interrupts any in-progress transition and jumps
+        // immediately, making the first Today-tab tap always reliable.
+        // The page content still animates in via snapToTodaySignal.
         guard coord.currentIndex != selectedIndex else { return }
-        let dir: UIPageViewController.NavigationDirection =
-            selectedIndex > coord.currentIndex ? .forward : .reverse
         let vc = coord.makeVC(for: selectedIndex)
-        pvc.setViewControllers([vc], direction: dir, animated: true)
+        pvc.setViewControllers([vc], direction: .forward, animated: false)
         coord.currentIndex = selectedIndex
     }
 

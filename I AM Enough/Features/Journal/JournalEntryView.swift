@@ -56,6 +56,10 @@ struct JournalEntryView: View {
 
                     editor(for: teaching)
 
+                    sectionDivider
+
+                    photoCaptureInvite
+
                     // Photos — stacked vertically, each with its own controls
                     ForEach(attachedImages.indices, id: \.self) { i in
                         attachedPhoto(at: i)
@@ -250,6 +254,25 @@ struct JournalEntryView: View {
             )
         }
         .padding(.top, 8)
+    }
+
+    private var sectionDivider: some View {
+        HStack(spacing: 12) {
+            Rectangle()
+                .fill(Theme.accentGold.opacity(0.45))
+                .frame(height: 0.6)
+            Text("\u{2766}")
+                .font(.system(size: 12, design: .serif))
+                .foregroundStyle(Theme.accentGold)
+            Rectangle()
+                .fill(Theme.accentGold.opacity(0.45))
+                .frame(height: 0.6)
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var photoCaptureInvite: some View {
+        PhotoCaptureInviteCard { showingPhotoMenu = true }
     }
 
     @ViewBuilder
@@ -462,5 +485,74 @@ struct JournalEntryView: View {
         // Adjust toast/jiggle indices
         if let t = toastIndex, t == index { toastIndex = nil }
         if let j = jigglingIndex, j == index { jigglingIndex = nil }
+    }
+}
+
+// MARK: - Photo capture invite card
+
+/// Standalone view so it can own the @State needed for the idle bob animation.
+private struct PhotoCaptureInviteCard: View {
+    let onTap: () -> Void
+    @State private var bobbing = false
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack(spacing: 12) {
+                Image(systemName: "camera.badge.plus")
+                    .font(.system(size: 26, weight: .light))
+                    .foregroundStyle(Theme.inkSecondary)
+                    .offset(y: bobbing ? -5 : 0)
+                    .animation(
+                        .easeInOut(duration: 1.15).repeatForever(autoreverses: true),
+                        value: bobbing
+                    )
+
+                Text("CAPTURE YOUR JOY")
+                    .font(Theme.smallCaps(10))
+                    .tracking(2.6)
+                    .foregroundStyle(Theme.inkFaded)
+
+                Text("Photograph a happy moment, something that made you smile, or anything that brought you peace today.")
+                    .font(Theme.bodyItalic(14))
+                    .lineSpacing(4)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(Theme.inkFaded.opacity(0.75))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 22)
+            .padding(.horizontal, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Theme.parchmentShadow.opacity(0.06))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(
+                        style: StrokeStyle(lineWidth: 1, dash: [5, 4])
+                    )
+                    .foregroundStyle(Theme.accentGold.opacity(0.45))
+            )
+        }
+        .buttonStyle(ParchmentTapButtonStyle())
+        .onAppear {
+            // Small delay so it doesn't start mid-scroll-in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                bobbing = true
+            }
+        }
+    }
+}
+
+// MARK: - Parchment tap button style
+
+/// Dims and gently scales down on press — tactile feedback without
+/// disrupting the dashed-border card layout.
+private struct ParchmentTapButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 0.60 : 1.0)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
     }
 }
