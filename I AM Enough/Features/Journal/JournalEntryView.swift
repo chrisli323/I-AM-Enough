@@ -31,6 +31,7 @@ struct JournalEntryView: View {
     @State private var teachingExpanded: Bool = false
     @State private var showingPhotoMenu = false
     @State private var showingCamera = false
+    @State private var showingPhotoPicker = false
     @State private var pickerItems: [PhotosPickerItem] = []
 
     /// Index of the photo currently jiggling (only one at a time).
@@ -102,15 +103,16 @@ struct JournalEntryView: View {
         }
         .confirmationDialog("Add a photo", isPresented: $showingPhotoMenu, titleVisibility: .hidden) {
             Button("Take a Photo") { showingCamera = true }
-            PhotosPicker(
-                "Choose from Library",
-                selection: $pickerItems,
-                maxSelectionCount: 0,       // 0 = unlimited
-                matching: .images,
-                photoLibrary: .shared()
-            )
+            Button("Choose from Library") { showingPhotoPicker = true }
             Button("Cancel", role: .cancel) {}
         }
+        .photosPicker(
+            isPresented: $showingPhotoPicker,
+            selection: $pickerItems,
+            maxSelectionCount: nil,
+            matching: .images,
+            photoLibrary: .shared()
+        )
         .fullScreenCover(isPresented: $showingCamera) {
             CameraPicker(images: $attachedImages)
                 .ignoresSafeArea()
