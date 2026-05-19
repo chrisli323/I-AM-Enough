@@ -36,10 +36,7 @@ struct TeachingView: View {
     @State private var paywallDismissed = false
 
     var body: some View {
-        // TODO: 🔒 FINAL BUILD — Remove previewDays and lock pageRange
-        // back to `Array(0...todayIndex)` so users can only swipe backward.
-        let previewDays = 90
-        let pageRange = Array(0...(maxBackDays + previewDays))
+        let pageRange = Array(0...maxBackDays)
 
         ZStack {
             Theme.parchmentBackground
