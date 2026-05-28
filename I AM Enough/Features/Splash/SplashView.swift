@@ -23,6 +23,23 @@ struct SplashView: View {
             .ignoresSafeArea()
             .allowsHitTesting(false)
 
+            GeometryReader { geo in
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("One Teaching.")
+                    Text("One Day at a Time.")
+                }
+                .font(.custom("BigCaslon-Medium", size: min(geo.size.width * 0.085, 34)))
+                .foregroundStyle(Color(red: 0.231, green: 0.149, blue: 0.067))
+                .shadow(color: Color(red: 0.231, green: 0.149, blue: 0.067).opacity(0.16),
+                        radius: 0.8,
+                        x: 0.4,
+                        y: 0.8)
+                .padding(.leading, 40)
+                .padding(.top, max(geo.safeAreaInsets.top + 64, 92))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
+            .allowsHitTesting(false)
+
             ZStack {
                 SplashLogoView()
                     .frame(width: 226, height: 226)
