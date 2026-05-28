@@ -15,7 +15,7 @@ final class PurchaseManager {
 
     /// Product ID registered in App Store Connect — and mirrored in
     /// StoreKit.storekit for local simulator testing.
-    static let productID = "com.chrislee.iamenough.unlock"
+    static let productID = "com.chrisli323.iamenough.unlock"
 
     /// True once the purchase is verified. Persisted to UserDefaults
     /// so the paywall never flashes on relaunch.
