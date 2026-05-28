@@ -97,12 +97,11 @@ final class AudioService {
         player = nil
         guard isEnabled else { return }
 
-        // Try the selected track first, fall back to first available
-        let trackName = selectedTrack
-        guard let url = Bundle.main.url(forResource: trackName, withExtension: "m4a")
-                ?? Bundle.main.url(forResource: trackName, withExtension: "mp3")
-                ?? Bundle.main.url(forResource: trackName, withExtension: "wav")
-        else { return }
+        let trackName = availableTracks.contains(selectedTrack)
+            ? selectedTrack
+            : (availableTracks.first ?? selectedTrack)
+
+        guard let url = audioURL(for: trackName) else { return }
 
         do {
             let p = try AVAudioPlayer(contentsOf: url)
@@ -147,6 +146,19 @@ final class AudioService {
         if !availableTracks.contains(selectedTrack), let first = availableTracks.first {
             selectedTrack = first
         }
+    }
+
+    private func audioURL(for trackName: String) -> URL? {
+        let extensions = ["m4a", "mp3", "wav"]
+        for ext in extensions {
+            if let url = Bundle.main.url(forResource: trackName, withExtension: ext, subdirectory: "Audio") {
+                return url
+            }
+            if let url = Bundle.main.url(forResource: trackName, withExtension: ext, subdirectory: nil) {
+                return url
+            }
+        }
+        return nil
     }
 
     private func configureSession() {
