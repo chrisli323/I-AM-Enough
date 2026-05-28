@@ -25,16 +25,17 @@ struct SplashView: View {
 
             ZStack {
                 SplashLogoView()
-                    .frame(width: 240, height: 240)
+                    .frame(width: 226, height: 226)
 
                 SerpentRingView()
-                    .frame(width: 300, height: 300)
+                    .frame(width: 284, height: 284)
             }
-            .scaleEffect(breathing ? 1.09 : 0.91)
+            .offset(y: 32)
+            .scaleEffect(breathing ? 1.04 : 0.94)
             .opacity(breathing ? 1.0 : 0.60)
             .shadow(
                 color: Color.orange.opacity(breathing ? 0.35 : 0.0),
-                radius: breathing ? 22 : 0
+                radius: breathing ? 16 : 0
             )
             .animation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true), value: breathing)
         }
