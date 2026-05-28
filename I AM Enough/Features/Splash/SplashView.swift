@@ -28,14 +28,14 @@ struct SplashView: View {
                     Text("One Teaching.")
                     Text("One Day at a Time.")
                 }
-                .font(.custom("BigCaslon-Medium", size: min(geo.size.width * 0.085, 34)))
-                .foregroundStyle(Color(red: 0.231, green: 0.149, blue: 0.067))
-                .shadow(color: Color(red: 0.231, green: 0.149, blue: 0.067).opacity(0.16),
+                .font(Theme.display(min(geo.size.width * 0.076, 31)))
+                .foregroundStyle(Theme.inkFadedDark)
+                .shadow(color: Theme.inkFadedDark.opacity(0.14),
                         radius: 0.8,
                         x: 0.4,
                         y: 0.8)
                 .padding(.leading, 40)
-                .padding(.top, max(geo.safeAreaInsets.top + 64, 92))
+                .padding(.top, max(geo.safeAreaInsets.top + 42, 72))
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
             .allowsHitTesting(false)
