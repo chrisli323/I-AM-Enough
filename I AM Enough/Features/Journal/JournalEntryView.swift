@@ -80,8 +80,7 @@ struct JournalEntryView: View {
                 }
             }
         }
-        .toolbarBackground(Theme.parchmentLight, for: .navigationBar)
-        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarBackground(.hidden, for: .navigationBar)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -102,7 +101,9 @@ struct JournalEntryView: View {
             }
         }
         .confirmationDialog("Add a photo", isPresented: $showingPhotoMenu, titleVisibility: .hidden) {
-            Button("Take a Photo") { showingCamera = true }
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                Button("Take a Photo") { showingCamera = true }
+            }
             Button("Choose from Library") { showingPhotoPicker = true }
             Button("Cancel", role: .cancel) {}
         }

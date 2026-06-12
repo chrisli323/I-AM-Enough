@@ -40,7 +40,7 @@ final class PurchaseManager {
             for await result in Transaction.updates {
                 guard case .verified(let tx) = result,
                       tx.productID == Self.productID else { continue }
-                self.markUnlocked()
+                await MainActor.run { self.markUnlocked() }
                 await tx.finish()
             }
         }
@@ -58,7 +58,7 @@ final class PurchaseManager {
 
     func loadProduct() async {
         guard let p = try? await Product.products(for: [Self.productID]).first else { return }
-        product = p
+        await MainActor.run { self.product = p }
     }
 
     // MARK: - Purchase
@@ -89,7 +89,7 @@ final class PurchaseManager {
         for await result in Transaction.currentEntitlements {
             guard case .verified(let tx) = result,
                   tx.productID == Self.productID else { continue }
-            markUnlocked()
+            await MainActor.run { self.markUnlocked() }
             return
         }
     }
